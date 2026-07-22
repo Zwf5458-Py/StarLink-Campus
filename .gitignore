@@ -1,0 +1,28 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Build outputs & dependencies
+**/target/
+**/node_modules/
+**/dist/
+**/unpackage/
+*.class
+*.jar
+*.war
+
+# Logs & Temp
+*.log
+.temp_reports/
+
+# IDE / Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Reference repositories (untracked)
+reference_repos/
+repos/

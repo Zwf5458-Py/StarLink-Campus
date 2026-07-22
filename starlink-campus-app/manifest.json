@@ -1,0 +1,23 @@
+{
+  "name": "海星家园共育",
+  "appid": "wx1234567890abcdef",
+  "description": "海星智联智慧校园 - 家长与教师双端微服务小程序",
+  "versionName": "2.5.0",
+  "versionCode": "250",
+  "transformPx": false,
+  "mp-weixin": {
+    "appid": "wx1234567890abcdef",
+    "setting": {
+      "urlCheck": false,
+      "es6": true,
+      "postcss": true,
+      "minified": true
+    },
+    "usingComponents": true,
+    "permission": {
+      "scope.userLocation": {
+        "desc": "您的位置信息将用于教职工 GPS 考勤打卡与接送卡验证"
+      }
+    }
+  }
+}

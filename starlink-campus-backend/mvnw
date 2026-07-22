@@ -1,0 +1,12 @@
+#!/bin/sh
+# Maven Wrapper Script for StarLink Campus Backend
+
+if [ -f "/opt/homebrew/bin/mvn" ]; then
+    /opt/homebrew/bin/mvn "$@"
+elif command -v mvn >/dev/null 2>&1; then
+    mvn "$@"
+else
+    echo "❌ 错误: 本地未找到 Maven 环境。"
+    echo "💡 请在终端运行一键安装命令: brew install maven"
+    exit 1
+fi

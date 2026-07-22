@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/bpmn"
+             targetNamespace="http://www.starlink.com/campus/oa">
+
+    <!-- 采购审批流 -->
+    <process id="kindergarten_oa_purchase" name="园务采购审批流" isExecutable="true">
+        <startEvent id="startEvent" name="发起申请"/>
+        <sequenceFlow sourceRef="startEvent" targetRef="financeTask"/>
+
+        <!-- 财务单节点审批 -->
+        <userTask id="financeTask" name="财务初审" flowable:candidateGroups="finance"/>
+        <sequenceFlow sourceRef="financeTask" targetRef="principalTask"/>
+
+        <!-- 园长终审 -->
+        <userTask id="principalTask" name="园长终审" flowable:candidateGroups="principal"/>
+        <sequenceFlow sourceRef="principalTask" targetRef="endEvent"/>
+
+        <endEvent id="endEvent" name="审批完成并自动存档"/>
+    </process>
+</definitions>
