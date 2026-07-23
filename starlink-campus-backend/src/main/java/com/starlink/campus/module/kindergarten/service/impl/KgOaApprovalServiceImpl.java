@@ -28,6 +28,9 @@ public class KgOaApprovalServiceImpl extends ServiceImpl<KgOaApprovalMapper, KgO
     @Autowired
     private TaskService taskService;
 
+    @Autowired(required = false)
+    private com.starlink.campus.module.kindergarten.mapper.KgStudentAttendanceMapper attendanceMapper;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean submit(KgOaApproval approval) {
@@ -71,6 +74,36 @@ public class KgOaApprovalServiceImpl extends ServiceImpl<KgOaApprovalMapper, KgO
                     oa.setStatus("已通过");
                     oa.setApproveTime(LocalDateTime.now());
                     oa.setApprovalComment("同意");
+                    
+                    // 业务闭环：家长请假申请自动生成请假考勤记录
+                    if ("请假申请".equals(oa.getApprovalType()) && "家长".equals(oa.getApplicantRole()) && oa.getApplicantId() != null) {
+                        try {
+                            // 尝试从 reason 中解析出请假日期，例如: 【事假】 2026-07-24 至 2026-07-25，原因：...
+                            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d{4}-\\d{2}-\\d{2}) 至 (\\d{4}-\\d{2}-\\d{2})");
+                            java.util.regex.Matcher matcher = pattern.matcher(oa.getReason() != null ? oa.getReason() : "");
+                            if (matcher.find()) {
+                                java.time.LocalDate startDate = java.time.LocalDate.parse(matcher.group(1));
+                                java.time.LocalDate endDate = java.time.LocalDate.parse(matcher.group(2));
+                                
+                                if (attendanceMapper != null) {
+                                    java.time.LocalDate d = startDate;
+                                    while (!d.isAfter(endDate)) {
+                                        com.starlink.campus.module.kindergarten.entity.KgStudentAttendance att = new com.starlink.campus.module.kindergarten.entity.KgStudentAttendance();
+                                        att.setStudentId(oa.getApplicantId());
+                                        att.setAttendanceDate(java.sql.Date.valueOf(d));
+                                        att.setStatus("LEAVE");
+                                        att.setCheckInTime(null);
+                                        att.setCheckOutTime(null);
+                                        att.setCreateTime(new java.util.Date());
+                                        attendanceMapper.insert(att);
+                                        d = d.plusDays(1);
+                                    }
+                                }
+                            }
+                        } catch (Exception e) {
+                            log.error("自动创建请假考勤记录失败", e);
+                        }
+                    }
                 } else {
                     oa.setStatus("审批中");
                 }

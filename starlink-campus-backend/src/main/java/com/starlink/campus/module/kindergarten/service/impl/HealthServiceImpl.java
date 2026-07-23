@@ -52,15 +52,33 @@ public class HealthServiceImpl extends ServiceImpl<KgMorningCheckMapper, KgMorni
 
     @Override
     public List<String> checkRecipeAllergies(List<String> ingredients) {
-        List<KgStudent> students = studentMapper.selectList(null);
+        if (ingredients == null || ingredients.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        LambdaQueryWrapper<KgStudent> wrapper = new LambdaQueryWrapper<>();
+        wrapper.isNotNull(KgStudent::getAllergies)
+               .ne(KgStudent::getAllergies, "")
+               .ne(KgStudent::getAllergies, "无");
+        
+        // 使用 like 条件，任何一个食材被包含即可
+        wrapper.and(w -> {
+            for (int i = 0; i < ingredients.size(); i++) {
+                if (i == 0) {
+                    w.like(KgStudent::getAllergies, ingredients.get(i));
+                } else {
+                    w.or().like(KgStudent::getAllergies, ingredients.get(i));
+                }
+            }
+        });
+
+        List<KgStudent> students = studentMapper.selectList(wrapper);
         List<String> warnings = new ArrayList<>();
         
         for (KgStudent student : students) {
-            if (student.getAllergies() != null && !student.getAllergies().isEmpty() && !"无".equals(student.getAllergies())) {
-                for (String ingredient : ingredients) {
-                    if (student.getAllergies().contains(ingredient)) {
-                        warnings.add("学生 " + student.getName() + " 对 " + ingredient + " 过敏");
-                    }
+            for (String ingredient : ingredients) {
+                if (student.getAllergies().contains(ingredient)) {
+                    warnings.add("学生 " + student.getName() + " 对 " + ingredient + " 过敏");
                 }
             }
         }

@@ -64,17 +64,15 @@ public class EnrollmentServiceImpl extends ServiceImpl<KgEnrollmentMapper, KgEnr
 
     @Override
     public Map<String, Object> getFunnelStats() {
-        List<KgEnrollment> all = list();
-        long total = all.size();
+        Map<String, Map<String, Object>> counts = this.baseMapper.countByStatus();
         
-        Map<String, Long> statusCount = all.stream()
-                .collect(Collectors.groupingBy(e -> e.getStatus() == null ? "未知" : e.getStatus(), Collectors.counting()));
+        long intent = getCount(counts, "意向");
+        long enrolled = getCount(counts, "已报名");
+        long interviewing = getCount(counts, "面试中");
+        long admitted = getCount(counts, "已录取");
+        long abandoned = getCount(counts, "已放弃");
         
-        long intent = statusCount.getOrDefault("意向", 0L);
-        long enrolled = statusCount.getOrDefault("已报名", 0L);
-        long interviewing = statusCount.getOrDefault("面试中", 0L);
-        long admitted = statusCount.getOrDefault("已录取", 0L);
-        long abandoned = statusCount.getOrDefault("已放弃", 0L);
+        long total = intent + enrolled + interviewing + admitted + abandoned;
         
         double conversionRate = total == 0 ? 0.0 : ((double) admitted / total) * 100;
         
@@ -88,5 +86,12 @@ public class EnrollmentServiceImpl extends ServiceImpl<KgEnrollmentMapper, KgEnr
         stats.put("conversionRate", conversionRate);
         
         return stats;
+    }
+
+    private long getCount(Map<String, Map<String, Object>> counts, String status) {
+        if (counts.containsKey(status) && counts.get(status).get("count") != null) {
+            return ((Number) counts.get(status).get("count")).longValue();
+        }
+        return 0L;
     }
 }

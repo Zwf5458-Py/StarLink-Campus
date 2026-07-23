@@ -13,6 +13,7 @@ public class KgOaApproval implements Serializable {
 
     @TableId(type = IdType.AUTO)
     private Long id;
+    private Long applicantId;
     private String applicantName;
     private String applicantRole;
     private String approvalType;
@@ -28,6 +29,9 @@ public class KgOaApproval implements Serializable {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public Long getApplicantId() { return applicantId; }
+    public void setApplicantId(Long applicantId) { this.applicantId = applicantId; }
 
     public String getApplicantName() { return applicantName; }
     public void setApplicantName(String applicantName) { this.applicantName = applicantName; }

@@ -125,13 +125,84 @@ public class SurveyServiceImpl extends ServiceImpl<KgSurveyMapper, KgSurvey> imp
 
     @Override
     public Map<String, Object> getSurveyStats(Long surveyId) {
-        QueryWrapper<KgSurveyAnswer> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("survey_id", surveyId);
-        List<KgSurveyAnswer> answers = answerMapper.selectList(queryWrapper);
+        // 获取所有题目
+        QueryWrapper<KgSurveyQuestion> qWrapper = new QueryWrapper<>();
+        qWrapper.eq("survey_id", surveyId).orderByAsc("sort_order");
+        List<KgSurveyQuestion> questions = questionMapper.selectList(qWrapper);
+
+        // 获取所有答案
+        QueryWrapper<KgSurveyAnswer> aWrapper = new QueryWrapper<>();
+        aWrapper.eq("survey_id", surveyId);
+        List<KgSurveyAnswer> answers = answerMapper.selectList(aWrapper);
+        
+        long totalRespondents = answers.stream().map(KgSurveyAnswer::getRespondentId).distinct().count();
+        
+        List<Map<String, Object>> questionStats = new java.util.ArrayList<>();
+        
+        for (KgSurveyQuestion q : questions) {
+            Map<String, Object> stat = new HashMap<>();
+            stat.put("questionId", q.getId());
+            stat.put("questionText", q.getQuestionText());
+            stat.put("questionType", q.getQuestionType());
+            
+            if ("SINGLE_CHOICE".equals(q.getQuestionType()) || "MULTIPLE_CHOICE".equals(q.getQuestionType())) {
+                Map<String, Integer> optionCounts = new HashMap<>();
+                if (q.getOptions() != null) {
+                    try {
+                        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                        List<String> options = mapper.readValue(q.getOptions(), new com.fasterxml.jackson.core.type.TypeReference<List<String>>(){});
+                        for (String opt : options) {
+                            optionCounts.put(opt, 0);
+                        }
+                    } catch (Exception e) {
+                        logger.warn("Parse options failed for question " + q.getId());
+                    }
+                }
+                
+                for (KgSurveyAnswer a : answers) {
+                    try {
+                        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                        Map<String, Object> answerMap = mapper.readValue(a.getAnswers(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>(){});
+                        Object userAns = answerMap.get(q.getId().toString());
+                        if (userAns instanceof String) {
+                            String uStr = (String) userAns;
+                            if (optionCounts.containsKey(uStr)) {
+                                optionCounts.put(uStr, optionCounts.get(uStr) + 1);
+                            }
+                        } else if (userAns instanceof List) {
+                            List<?> uList = (List<?>) userAns;
+                            for (Object uItem : uList) {
+                                String uStr = String.valueOf(uItem);
+                                if (optionCounts.containsKey(uStr)) {
+                                    optionCounts.put(uStr, optionCounts.get(uStr) + 1);
+                                }
+                            }
+                        }
+                    } catch (Exception ignore) {}
+                }
+                stat.put("optionStats", optionCounts);
+            } else {
+                // 文本题仅截取最近几条
+                List<String> recentTexts = new java.util.ArrayList<>();
+                for (KgSurveyAnswer a : answers) {
+                    try {
+                        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                        Map<String, Object> answerMap = mapper.readValue(a.getAnswers(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>(){});
+                        Object userAns = answerMap.get(q.getId().toString());
+                        if (userAns instanceof String && org.springframework.util.StringUtils.hasText((String)userAns)) {
+                            recentTexts.add((String)userAns);
+                            if (recentTexts.size() >= 5) break;
+                        }
+                    } catch (Exception ignore) {}
+                }
+                stat.put("recentAnswers", recentTexts);
+            }
+            questionStats.add(stat);
+        }
         
         Map<String, Object> stats = new HashMap<>();
-        stats.put("totalRespondents", answers.size());
-        stats.put("questionStats", answers); // Simplified for this example
+        stats.put("totalRespondents", totalRespondents);
+        stats.put("questionStats", questionStats);
         
         return stats;
     }

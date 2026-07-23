@@ -60,8 +60,9 @@ const sendQuestion = () => {
   scrollToBottom()
 
   request({
-    url: '/kindergarten/ai/chat?question=' + encodeURIComponent(q),
-    method: 'POST'
+    url: '/kindergarten/ai/chat',
+    method: 'POST',
+    data: { question: q }
   }).then((res: any) => {
     const reply = res.data || '抱歉，暂时未能查询到相关规则。'
     messages.value.push({ role: 'ai', content: reply })

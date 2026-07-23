@@ -17,6 +17,7 @@ public class KgGrowthRecord implements Serializable {
     private String value;     // 值（如 "120cm", "25kg", "能完整叙述故事")
     private String unit;      // 单位（cm/kg/等级）
     private String photoUrl;
+    private String videoUrl;
     private String teacherComment;
     private String semester;  // 2026春/2026秋
     private Long recordedBy;  // staffId
@@ -38,6 +39,8 @@ public class KgGrowthRecord implements Serializable {
     public void setUnit(String unit) { this.unit = unit; }
     public String getPhotoUrl() { return photoUrl; }
     public void setPhotoUrl(String photoUrl) { this.photoUrl = photoUrl; }
+    public String getVideoUrl() { return videoUrl; }
+    public void setVideoUrl(String videoUrl) { this.videoUrl = videoUrl; }
     public String getTeacherComment() { return teacherComment; }
     public void setTeacherComment(String teacherComment) { this.teacherComment = teacherComment; }
     public String getSemester() { return semester; }

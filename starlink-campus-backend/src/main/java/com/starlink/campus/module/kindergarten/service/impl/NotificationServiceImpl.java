@@ -46,4 +46,15 @@ public class NotificationServiceImpl extends ServiceImpl<KgNotificationMapper, K
         stats.put("unread", notification != null && notification.getIsRead() != null && notification.getIsRead() == 1 ? 0 : 1);
         return stats;
     }
+
+    @Override
+    public void sendWechatTemplateMessage(Long userId, String templateId, Map<String, String> data) {
+        // [Mock] 记录微信模板消息发送，因为没有实际的 appId 和 secret 配置
+        // 实际开发中会调用类似 WxMaService.getMsgService().sendTemplateMsg()
+        System.out.println("====== [微信模板消息推送 (Mock)] ======");
+        System.out.println("用户ID: " + userId);
+        System.out.println("模板ID: " + templateId);
+        System.out.println("数据: " + data);
+        System.out.println("======================================");
+    }
 }

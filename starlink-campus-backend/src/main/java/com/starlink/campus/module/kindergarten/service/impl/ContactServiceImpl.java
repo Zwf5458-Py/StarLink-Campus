@@ -38,6 +38,7 @@ public class ContactServiceImpl implements ContactService {
     }
 
     @Override
+    @org.springframework.cache.annotation.Cacheable(value = "contactList", key = "#keyword == null ? 'ALL' : #keyword")
     public List<ContactDTO> searchContacts(String keyword) {
         List<ContactDTO> contacts = new ArrayList<>();
 

@@ -2,7 +2,7 @@ export class BoardWebSocketClient {
   private url: string;
   private ws: WebSocket | null = null;
   private onMessageCallback: (data: any) => void;
-  private reconnectInterval: number = 5000;
+  private retryCount: number = 0;
 
   constructor(url: string, onMessage: (data: any) => void) {
     this.url = url;
@@ -15,6 +15,7 @@ export class BoardWebSocketClient {
 
       this.ws.onopen = () => {
         console.log('[班牌 WebSocket] 连接成功:', this.url);
+        this.retryCount = 0;
       };
 
       this.ws.onmessage = (event) => {
@@ -27,8 +28,10 @@ export class BoardWebSocketClient {
       };
 
       this.ws.onclose = () => {
-        console.warn('[班牌 WebSocket] 连接断开，5秒后尝试重连...');
-        setTimeout(() => this.connect(), this.reconnectInterval);
+        let backoff = Math.min(2000 * Math.pow(2, this.retryCount), 30000);
+        console.warn(`[班牌 WebSocket] 连接断开，${backoff}ms 后尝试重连 (第${this.retryCount + 1}次)...`);
+        this.retryCount++;
+        setTimeout(() => this.connect(), backoff);
       };
 
       this.ws.onerror = (error) => {

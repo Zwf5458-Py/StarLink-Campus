@@ -14,8 +14,11 @@
         <div style="display: flex; gap: 12px; align-items: center; background: #fff8f1; padding: 16px; border-radius: 12px; border: 1px dashed #f59e0b;">
           <span style="font-size: 24px;">📷</span>
           <div style="flex: 1;">
-            <div style="font-weight: 600; color: #b45309; margin-bottom: 4px;">接入百度AI / 多模态视觉模型，辅助识别手足口病（口腔疱疹、手掌红点）</div>
-            <div style="font-size: 13px; color: #d97706;">请让学童张嘴或伸出手掌，使用晨检仪拍照，AI将自动给出疑似异常提醒。</div>
+            <div style="font-weight: 600; color: #b45309; margin-bottom: 4px;">接入阿里云视觉多模态大模型 (Qwen-VL-Max)，辅助识别手足口病（口腔疱疹、手掌红点）</div>
+            <div style="font-size: 13px; color: #d97706; display: flex; align-items: center; gap: 10px; margin-top: 8px;">
+              <span>影像URL:</span>
+              <el-input v-model="visualImageUrl" placeholder="输入患儿手掌/口腔图片链接进行检测" style="width: 400px;" size="small" />
+            </div>
           </div>
           <el-button type="primary" @click="handleAiVisualCheck" :loading="visualChecking">✨ 启动 AI 视觉分析</el-button>
         </div>
@@ -51,6 +54,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { getMorningSummary, checkRecipeAllergies } from '@/api/health';
+import request from '@/utils/request';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
 const loading = ref(false);
@@ -94,21 +98,43 @@ const handleCheckRecipe = async () => {
 };
 
 const visualChecking = ref(false);
+const visualImageUrl = ref('https://example.com/sample_hand_rash.jpg'); // 默认占位图
 
-const handleAiVisualCheck = () => {
+const handleAiVisualCheck = async () => {
+  if (!visualImageUrl.value.trim()) {
+    ElMessage.warning('请输入待检测的图片 URL');
+    return;
+  }
   visualChecking.value = true;
-  // 模拟调用后端 /health/ai-analyze
-  setTimeout(() => {
+  try {
+    const res = await request.post('/kindergarten/ai/health-analyze', null, {
+      params: { imageUrl: visualImageUrl.value }
+    });
+    
+    if (res.code === 200 && res.data) {
+      const data = res.data;
+      const warningHtml = data.hasWarning 
+        ? `<p style="color: red; font-weight: bold;">⚠️ 警告：检测到该幼儿影像存在疑似异常，具体症状：${data.symptoms || '无描述'}</p>`
+        : `<p style="color: green; font-weight: bold;">✅ AI 检查正常：未发现明显异常。</p>`;
+
+      ElMessageBox.alert(`
+        <div style="font-size: 14px; line-height: 1.6;">
+          <p><b>AI 视觉识别分析报告：</b></p>
+          <p>识别图片：<a href="${data.imageUrl}" target="_blank">查看原图</a></p>
+          <p>置信度：${data.confidence || '未知'}</p>
+          ${warningHtml}
+          <p>结论建议：${data.conclusion || '无'}</p>
+        </div>
+      `, 'AI 多模态视觉分析完成', { dangerouslyUseHTMLString: true, type: data.hasWarning ? 'warning' : 'success' });
+    } else {
+      ElMessage.error(res.msg || 'AI 服务响应异常');
+    }
+  } catch (error) {
+    console.error(error);
+    ElMessage.error('调用 AI 服务失败，请稍后重试。');
+  } finally {
     visualChecking.value = false;
-    ElMessageBox.alert(`
-      <div style="font-size: 14px;">
-        <p><b>AI 视觉识别分析报告：</b></p>
-        <p>识别置信度：98%</p>
-        <p style="color: red;">⚠️ 警告：检测到该幼儿手掌存在疑似红疹，口腔内可见细小疱疹。</p>
-        <p>结论：高度疑似手足口病早期症状，建议立即隔离并安排复诊！</p>
-      </div>
-    `, 'AI 视觉分析完成', { dangerouslyUseHTMLString: true, type: 'warning' });
-  }, 2000);
+  }
 };
 </script>
 

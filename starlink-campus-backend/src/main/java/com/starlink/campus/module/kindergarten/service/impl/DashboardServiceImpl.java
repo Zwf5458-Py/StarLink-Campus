@@ -47,6 +47,7 @@ public class DashboardServiceImpl implements DashboardService {
     private KgPatrolRecordMapper patrolRecordMapper;
 
     @Override
+    @org.springframework.cache.annotation.Cacheable(value = "dashboardStats", key = "'today'", sync = true)
     public Map<String, Object> getDashboardStats() {
         Map<String, Object> data = new HashMap<>();
         java.util.Date today = java.util.Date.from(LocalDate.now().atStartOfDay(java.time.ZoneId.systemDefault()).toInstant());
@@ -74,15 +75,28 @@ public class DashboardServiceImpl implements DashboardService {
         Long completedPatrols = patrolRecordMapper != null ? patrolRecordMapper.selectCount(new QueryWrapper<KgPatrolRecord>().eq("status", "COMPLETED")) : 0L;
         double patrolRate = totalPatrols == 0 ? 0.0 : Math.round((double) completedPatrols / totalPatrols * 1000.0) / 10.0;
 
-        // 7. 班级考勤明细列表 SQL 聚合
+        // 7. 班级考勤明细列表 SQL 聚合 (解决 N+1 问题)
         List<Map<String, Object>> classDetails = new ArrayList<>();
-        List<KgClass> classList = classMapper != null ? classMapper.selectList(null) : new ArrayList<>();
         
+        Map<Long, Map<String, Object>> classStudentCounts = studentMapper != null ? studentMapper.countStudentsByClass() : new HashMap<>();
+        Map<Long, Map<String, Object>> classAttendanceCounts = attendanceMapper != null ? attendanceMapper.countAttendanceByClass(today) : new HashMap<>();
+
+        List<KgClass> classList = classMapper != null ? classMapper.selectList(null) : new ArrayList<>();
         for (KgClass cls : classList) {
-            Long clsTotal = studentMapper != null ? studentMapper.selectCount(new QueryWrapper<KgStudent>().eq("class_id", cls.getId())) : 0L;
-            Long clsPresent = attendanceMapper != null ? attendanceMapper.selectCount(new QueryWrapper<KgStudentAttendance>().eq("class_id", cls.getId()).eq("attendance_date", today)) : 0L;
-            long leaveCount = Math.max(0, clsTotal - clsPresent);
-            classDetails.add(createClassMap(cls.getClassName(), cls.getGradeLevel(), clsTotal.intValue(), clsPresent.intValue(), (int) leaveCount, "全部正常"));
+            Long clsId = cls.getId();
+            
+            int clsTotal = 0;
+            if (classStudentCounts.containsKey(clsId) && classStudentCounts.get(clsId).get("count") != null) {
+                clsTotal = ((Number) classStudentCounts.get(clsId).get("count")).intValue();
+            }
+            
+            int clsPresent = 0;
+            if (classAttendanceCounts.containsKey(clsId) && classAttendanceCounts.get(clsId).get("count") != null) {
+                clsPresent = ((Number) classAttendanceCounts.get(clsId).get("count")).intValue();
+            }
+            
+            int leaveCount = Math.max(0, clsTotal - clsPresent);
+            classDetails.add(createClassMap(cls.getClassName(), cls.getGradeLevel(), clsTotal, clsPresent, leaveCount, "全部正常"));
         }
 
         // 8. 8 大看板数据注入

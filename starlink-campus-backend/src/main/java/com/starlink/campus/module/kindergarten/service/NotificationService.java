@@ -9,4 +9,5 @@ public interface NotificationService extends IService<KgNotification> {
     void send(KgNotification notification);
     void markAsRead(Long id);
     Map<String, Object> getReadStats(Long notificationId);
+    void sendWechatTemplateMessage(Long userId, String templateId, Map<String, String> data);
 }

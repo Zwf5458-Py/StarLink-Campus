@@ -58,7 +58,8 @@ public class AiAssistantController {
 
     @Operation(summary = "AI 园秘 RAG 智能对话")
     @PostMapping("/chat")
-    public R<String> chatWithKnowledgeBase(@RequestParam String question) {
+    public R<String> chatWithKnowledgeBase(@RequestBody Map<String, String> payload) {
+        String question = payload.get("question");
         return R.ok(aiAssistantService.chatWithKnowledgeBase(question));
     }
 
