@@ -21,6 +21,7 @@ import WeeklyPlanView from '@/views/WeeklyPlanView.vue'
 import SurveyManageView from '@/views/SurveyManageView.vue'
 import EnrollmentView from '@/views/EnrollmentView.vue'
 import SalaryView from '@/views/SalaryView.vue'
+import AiKnowledgeView from '@/views/AiKnowledgeView.vue'
 
 const routes = [
   { path: '/', name: 'Dashboard', component: DashboardView },
@@ -45,6 +46,7 @@ const routes = [
   { path: '/survey', name: 'SurveyManage', component: SurveyManageView },
   { path: '/enrollment', name: 'Enrollment', component: EnrollmentView },
   { path: '/salary', name: 'Salary', component: SalaryView },
+  { path: '/ai-knowledge', name: 'AiKnowledge', component: AiKnowledgeView },
 ]
 
 const router = createRouter({
