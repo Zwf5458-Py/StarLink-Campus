@@ -23,16 +23,24 @@
         </view>
       </view>
     </view>
+    <view v-if="posts.length === 0 && !loading" class="empty-state">📷 暂无班级圈动态，快来发布第一条吧！</view>
+    <view v-if="loading" class="loading-state">加载中...</view>
+    <view v-if="loadError" class="error-state"><text>加载失败</text><button @click="retryLoad">重试</button></view>
   </view>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { getCircleList } from '../../api/circle';
+import { onPullDownRefresh } from '@dcloudio/uni-app';
+import { getCircleList, publishCircle } from '../../api/circle';
 
 const posts = ref([]);
+const loading = ref(true);
+const loadError = ref(false);
 
-onMounted(async () => {
+const fetchData = async () => {
+  loading.value = true;
+  loadError.value = false;
   try {
     const res = await getCircleList();
     if (res && res.data) {
@@ -40,8 +48,24 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('Failed to fetch circle list', error);
+    loadError.value = true;
+  } finally {
+    loading.value = false;
+    uni.stopPullDownRefresh();
   }
+};
+
+onMounted(() => {
+  fetchData();
 });
+
+onPullDownRefresh(() => {
+  fetchData();
+});
+
+const retryLoad = () => {
+  fetchData();
+};
 
 const handleLike = (post) => {
   if (!post.likesCount) post.likesCount = 0;
@@ -50,7 +74,28 @@ const handleLike = (post) => {
 };
 
 const handlePublish = () => {
-  uni.showToast({ title: '调起微信相机发布照片', icon: 'none' });
+  uni.chooseImage({
+    count: 1,
+    success: async (res) => {
+      const tempFilePath = res.tempFilePaths[0];
+      try {
+        uni.showLoading({ title: '发布中' });
+        // Assuming there is an upload API or we just send the URL for now
+        await publishCircle({
+          content: '新照片动态',
+          photoUrls: tempFilePath,
+          className: '大(1)班',
+          authorId: 201
+        });
+        uni.hideLoading();
+        uni.showToast({ title: '发布成功' });
+        fetchData();
+      } catch (e) {
+        uni.hideLoading();
+        uni.showToast({ title: '发布失败', icon: 'none' });
+      }
+    }
+  });
 };
 </script>
 
@@ -69,4 +114,7 @@ const handlePublish = () => {
 .content { font-size: 13px; color: #334155; line-height: 1.5; margin-bottom: 12px; display: block; }
 .action-row { display: flex; gap: 16px; align-items: center; font-size: 12px; color: #64748b; font-weight: bold; }
 .like-btn { background: rgba(255,45,85,0.1); color: #ff2d55; padding: 4px 10px; border-radius: 10px; }
+.empty-state { text-align: center; color: #94a3b8; padding: 40px 0; font-size: 14px; }
+.loading-state { text-align: center; color: #94a3b8; padding: 20px 0; font-size: 14px; }
+.error-state { text-align: center; color: #ef4444; padding: 20px 0; font-size: 14px; }
 </style>

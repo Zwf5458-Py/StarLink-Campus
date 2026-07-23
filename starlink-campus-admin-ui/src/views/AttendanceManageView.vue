@@ -2,7 +2,9 @@
   <div class="attendance-container" v-loading="loading">
     <el-card header="👶 幼儿每日打卡记录与月度伙食费退费计算器">
       <el-alert title="根据规章制度：幼儿月累计缺勤天数 > 5 天，按 20 元/天 自动计算退还伙食费。" type="info" show-icon :closable="false" style="margin-bottom: 16px;" />
-      
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
+        <el-button type="success" @click="handleExport">📥 导出考勤报表 Excel</el-button>
+      </div>
       <el-table :data="attendanceList" border style="width: 100%">
         <el-table-column prop="studentId" label="学号" width="100" />
         <el-table-column prop="studentName" label="幼儿姓名" width="130" />
@@ -72,6 +74,12 @@ const handleCalculateRefund = async (row) => {
   } catch (error) {
     ElMessage.error('退费计算失败');
   }
+};
+
+const handleExport = () => {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
+  window.open(`${baseUrl}/kindergarten/attendance/export?classId=1&date=${new Date().toISOString().split('T')[0]}`, '_blank');
+  ElMessage.success('考勤报表正在导出...');
 };
 </script>
 

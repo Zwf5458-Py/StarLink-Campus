@@ -38,17 +38,32 @@
 
         <!-- 模块 13: 隐私通讯录 -->
         <el-tab-pane label="📖 园区加密通讯录" name="contacts">
-          <el-table :data="contacts" class="apple-table" style="width: 100%">
+          <div style="margin-bottom: 14px; display: flex; gap: 10px;">
+            <el-input v-model="contactSearch" placeholder="搜索姓名/班级..." style="width: 260px;" clearable @clear="fetchContacts" @keyup.enter="searchContactList">
+              <template #prefix><span>🔍</span></template>
+            </el-input>
+            <el-button type="primary" @click="searchContactList">搜索</el-button>
+            <el-button @click="contactSearch = ''; fetchContacts()">重置</el-button>
+          </div>
+          <el-table :data="contacts" class="apple-table" style="width: 100%" v-loading="contactsLoading">
             <el-table-column prop="name" label="姓名" width="120" />
             <el-table-column prop="role" label="身份/关系" width="140" />
             <el-table-column prop="className" label="关联班级" width="160" />
-            <el-table-column prop="phone" label="联系电话 (隐私加密)" width="180" />
-            <el-table-column label="一键拨号" width="140">
+            <el-table-column prop="maskedPhone" label="联系电话 (隐私加密)" width="180" />
+            <el-table-column prop="type" label="类型" width="100">
+              <template #default="scope">
+                <el-tag :type="scope.row.type === 'STAFF' ? 'primary' : 'success'" size="small">
+                  {{ scope.row.type === 'STAFF' ? '教职工' : '家长' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="一键拨号" width="160">
               <template #default="scope">
                 <button class="action-btn pass" @click="handleCall(scope.row)">📞 虚拟加密呼叫</button>
               </template>
             </el-table-column>
           </el-table>
+          <el-empty v-if="!contactsLoading && contacts.length === 0" description="暂无通讯录数据" />
         </el-tab-pane>
 
         <!-- 模块 14: 定向通知公告 -->
@@ -118,6 +133,7 @@
 import { ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { getCircleList, publishCircle, likeCircle } from '@/api/classCircle';
+import { getContactList, searchContacts, virtualCall } from '@/api/contact';
 
 const activeTab = ref('circle');
 const dialogPost = ref(false);
@@ -147,6 +163,7 @@ const fetchData = async () => {
 
 onMounted(() => {
   fetchData();
+  fetchContacts();
 });
 
 const submitPost = () => {
@@ -184,19 +201,50 @@ const handleLike = async (post) => {
   }
 };
 
-const contacts = ref([
-  { name: '李老师', role: '大班班主任', className: '大(1)班', phone: '138****8888' },
-  { name: '张小明家长', role: '张小明 (父亲)', className: '大(1)班', phone: '139****9999' },
-  { name: '王医生', role: '保健医师', className: '园区保健室', phone: '137****6666' }
-]);
+const contacts = ref([]);
+const contactsLoading = ref(false);
+const contactSearch = ref('');
+
+const fetchContacts = async () => {
+  contactsLoading.value = true;
+  try {
+    const res = await getContactList();
+    contacts.value = res.data || [];
+  } catch (error) {
+    console.error('拉取通讯录失败', error);
+  } finally {
+    contactsLoading.value = false;
+  }
+};
+
+const searchContactList = async () => {
+  if (!contactSearch.value.trim()) {
+    fetchContacts();
+    return;
+  }
+  contactsLoading.value = true;
+  try {
+    const res = await searchContacts(contactSearch.value);
+    contacts.value = res.data || [];
+  } catch (error) {
+    console.error('搜索通讯录失败', error);
+  } finally {
+    contactsLoading.value = false;
+  }
+};
 
 const notices = ref([
   { title: '关于大(1)班秋季户外体能拓展活动的家长告知书', target: '大(1)班全员家长', publishTime: '2026-07-22', readCount: 26, totalCount: 28 },
   { title: '关于开展秋季幼儿园手足口与传染病防控卫生的通知', target: '全园家长与教职工', publishTime: '2026-07-20', readCount: 390, totalCount: 400 }
 ]);
 
-const handleCall = (row) => {
-  ElMessage.success(`正在拉起安全虚拟拨号呼叫: ${row.name}`);
+const handleCall = async (row) => {
+  try {
+    await virtualCall(row.originalId);
+    ElMessage.success(`正在拉起安全虚拟拨号呼叫: ${row.name}`);
+  } catch (error) {
+    ElMessage.error('呼叫失败');
+  }
 };
 
 const handleRemind = (row) => {

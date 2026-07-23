@@ -12,7 +12,11 @@ import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
+@Tag(name = "幼儿档案管理")
 @SaCheckLogin
 @RestController
 @RequestMapping("/kindergarten/student")
@@ -69,5 +73,20 @@ public class KgStudentController {
         res.put("syncedTime", java.time.LocalDateTime.now().toString());
         res.put("message", "全园幼儿与教职工 512 维人脸特征库更新同步成功！");
         return R.ok(res);
+    }
+
+    @Operation(summary = "批量升班")
+    @PostMapping("/batch-promote")
+    public R<Integer> batchPromote(@RequestBody Map<String, Object> params) {
+        List<Integer> list = (List<Integer>) params.get("studentIds");
+        List<Long> studentIds = list.stream().map(Integer::longValue).toList();
+        Long targetClassId = Long.valueOf(params.get("targetClassId").toString());
+        return R.ok(studentService.batchPromote(studentIds, targetClassId));
+    }
+
+    @Operation(summary = "批量毕业")
+    @PostMapping("/batch-graduate")
+    public R<Integer> batchGraduate(@RequestBody List<Long> studentIds) {
+        return R.ok(studentService.batchGraduate(studentIds));
     }
 }

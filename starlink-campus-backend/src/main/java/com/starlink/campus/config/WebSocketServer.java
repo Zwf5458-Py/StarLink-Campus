@@ -14,11 +14,23 @@ public class WebSocketServer {
     private static final ConcurrentHashMap<String, Session> sessionMap = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, Long> lastActiveTimeMap = new ConcurrentHashMap<>();
 
+    /** 最大并发连接数，防止 SaaS 扩展时内存溢出 */
+    private static final int MAX_CONNECTIONS = 50;
+
     @OnOpen
     public void onOpen(Session session, @PathParam("roomNumber") String roomNumber) {
+        if (sessionMap.size() >= MAX_CONNECTIONS) {
+            System.out.println("[WebSocket Server] 连接数已达上限(" + MAX_CONNECTIONS + ")，拒绝新连接: " + roomNumber);
+            try {
+                session.close(new CloseReason(CloseReason.CloseCodes.TRY_AGAIN_LATER, "连接数已达上限"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return;
+        }
         sessionMap.put(roomNumber, session);
         lastActiveTimeMap.put(roomNumber, System.currentTimeMillis());
-        System.out.println("[WebSocket Server] 智慧班牌已连接, 教室编号: " + roomNumber);
+        System.out.println("[WebSocket Server] 智慧班牌已连接, 教室编号: " + roomNumber + " (当前连接数: " + sessionMap.size() + "/" + MAX_CONNECTIONS + ")");
     }
 
     @OnMessage

@@ -12,4 +12,6 @@ public interface KgStudentService extends IService<KgStudent> {
     void update(KgStudent student);
     void delete(Long id);
     List<KgStudent> listByClassId(Long classId);
+    int batchPromote(List<Long> studentIds, Long targetClassId);
+    int batchGraduate(List<Long> studentIds);
 }

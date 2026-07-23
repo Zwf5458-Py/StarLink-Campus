@@ -18,41 +18,68 @@
         </view>
       </view>
     </view>
+    <view v-if="notices.length === 0 && !loading" class="empty-state">暂无通知公告</view>
+    <view v-if="loading" class="loading-state">加载中...</view>
+    <view v-if="loadError" class="error-state"><text>加载失败</text><button @click="retryLoad">重试</button></view>
   </view>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { getArticleList } from '../../api/article';
+import { onPullDownRefresh } from '@dcloudio/uni-app';
+import { getArticleList, approveArticle } from '../../api/article';
 
 const notices = ref([]);
+const loading = ref(true);
+const loadError = ref(false);
 
-onMounted(async () => {
+const fetchData = async () => {
+  loading.value = true;
+  loadError.value = false;
   try {
     const res = await getArticleList();
     if (res && res.data) {
-      // 过滤或者直接展示
       notices.value = res.data.map(a => ({
         id: a.id,
         type: a.category || '全园公告',
         date: a.createTime ? a.createTime.substring(0, 10) : '刚刚',
         title: a.title,
         content: a.content,
-        isSigned: false
+        isSigned: a.status === '已发布' ? false : false // Or based on other real logic
       }));
     }
   } catch (e) {
     console.error("Failed to fetch articles", e);
-    // Fallback Mock
-    notices.value = [
-      { id: 1, type: '班级通知', date: '2026-07-22', title: '关于大(1)班秋季户外体能拓展活动的告知书', content: '各位家长：本周五上午班级将开展海星科普体能拓展，请为孩子穿着轻便运动鞋与水壶。', isSigned: false }
-    ];
+    loadError.value = true;
+  } finally {
+    loading.value = false;
+    uni.stopPullDownRefresh();
   }
+};
+
+onMounted(() => {
+  fetchData();
 });
 
-const handleSign = (item) => {
-  item.isSigned = true;
-  uni.showToast({ title: '已成功签收答复！', icon: 'success' });
+onPullDownRefresh(() => {
+  fetchData();
+});
+
+const retryLoad = () => {
+  fetchData();
+};
+
+const handleSign = async (item) => {
+  try {
+    uni.showLoading({ title: '签收中' });
+    await approveArticle(item.id);
+    item.isSigned = true;
+    uni.hideLoading();
+    uni.showToast({ title: '已成功签收答复！', icon: 'success' });
+  } catch (error) {
+    uni.hideLoading();
+    uni.showToast({ title: '签收失败', icon: 'none' });
+  }
 };
 </script>
 
@@ -70,4 +97,7 @@ const handleSign = (item) => {
 .notice-footer { display: flex; justify-content: flex-end; }
 .signed-text { font-size: 12px; color: #34c759; font-weight: bold; }
 .sign-btn { background: #0071e3; color: #fff; border: none; padding: 6px 16px; border-radius: 10px; font-size: 12px; font-weight: bold; }
+.empty-state { text-align: center; color: #94a3b8; padding: 40px 0; font-size: 14px; }
+.loading-state { text-align: center; color: #94a3b8; padding: 20px 0; font-size: 14px; }
+.error-state { text-align: center; color: #ef4444; padding: 20px 0; font-size: 14px; }
 </style>

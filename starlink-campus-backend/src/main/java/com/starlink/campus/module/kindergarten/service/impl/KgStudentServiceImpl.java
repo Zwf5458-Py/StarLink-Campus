@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Date;
 import java.util.List;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 
 @Slf4j
 @Service
@@ -58,5 +59,23 @@ public class KgStudentServiceImpl extends ServiceImpl<KgStudentMapper, KgStudent
         LambdaQueryWrapper<KgStudent> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(KgStudent::getClassId, classId);
         return this.list(wrapper);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int batchPromote(List<Long> studentIds, Long targetClassId) {
+        if (studentIds == null || studentIds.isEmpty()) return 0;
+        LambdaUpdateWrapper<KgStudent> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.in(KgStudent::getId, studentIds).set(KgStudent::getClassId, targetClassId);
+        return this.baseMapper.update(null, wrapper);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int batchGraduate(List<Long> studentIds) {
+        if (studentIds == null || studentIds.isEmpty()) return 0;
+        LambdaUpdateWrapper<KgStudent> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.in(KgStudent::getId, studentIds).set(KgStudent::getStatus, 2);
+        return this.baseMapper.update(null, wrapper);
     }
 }

@@ -4,9 +4,9 @@
     <view class="user-profile-card">
       <view class="avatar-large">👨‍👩‍👧</view>
       <view class="user-meta">
-        <text class="u-name">张建国 (张小明 家长) - 验证</text>
-        <text class="u-phone">139 **** 5678</text>
-        <text class="u-badge">海星大(1)班 认证家长</text>
+        <text class="u-name">{{ userInfo.name }}</text>
+        <text class="u-phone">{{ userInfo.phone }}</text>
+        <text class="u-badge">{{ userInfo.badge }}</text>
       </view>
     </view>
 
@@ -19,12 +19,17 @@
           <text class="r-val">22 天</text>
         </view>
         <view class="ref-row">
-          <text class="r-lbl">实际缺勤天数</text>
-          <text class="r-val warning">6 天 (触发退费算子)</text>
+          <text class="r-lbl">实际缺勤情况</text>
+          <text class="r-val warning">系统自动统计中</text>
         </view>
         <view class="ref-row highlight">
           <text class="r-lbl">自动退还伙食费</text>
-          <text class="r-val green">￥ 120.00 元</text>
+          <text v-if="!loadingRefund && !refundError" class="r-val green">￥ {{ refundAmount !== null ? refundAmount.toFixed(2) : '0.00' }} 元</text>
+          <text v-if="loadingRefund" class="r-val">计算中...</text>
+          <view v-if="refundError" class="r-val">
+            <text style="color: red; margin-right: 10px;">计算失败</text>
+            <button size="mini" @click="fetchRefund" style="display: inline-block;">重试</button>
+          </view>
         </view>
       </view>
     </view>
@@ -50,6 +55,44 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue';
+import { request } from '../../utils/request';
+
+const userInfo = ref({
+  name: '张建国 (张小明 家长) - 验证',
+  phone: '139 **** 5678',
+  badge: '海星大(1)班 认证家长'
+});
+
+const studentId = 1;
+const refundAmount = ref(null);
+const loadingRefund = ref(true);
+const refundError = ref(false);
+
+const fetchRefund = async () => {
+  loadingRefund.value = true;
+  refundError.value = false;
+  try {
+    const res = await request({
+      url: `/kindergarten/attendance/calculate-refund/${studentId}?month=2026-07`,
+      method: 'GET'
+    });
+    if (res && res.data !== undefined) {
+      refundAmount.value = res.data;
+    } else {
+      refundAmount.value = 0;
+    }
+  } catch (e) {
+    console.error('Failed to fetch refund amount', e);
+    refundError.value = true;
+  } finally {
+    loadingRefund.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchRefund();
+});
 const handleAction = (name) => {
   uni.showToast({ title: `查看 ${name}`, icon: 'none' });
 };

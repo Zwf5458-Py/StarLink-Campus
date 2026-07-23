@@ -3,6 +3,7 @@
     <el-card header="🛡️ 安防巡检打卡与故障报修工单中心">
       <div style="margin-bottom: 16px;">
         <el-button type="primary" @click="fetchData">刷新巡检与工单数据</el-button>
+        <el-button type="success" @click="handleExportPatrol">📥 导出巡检报表</el-button>
       </div>
 
       <el-tabs v-model="activeTab">
@@ -45,6 +46,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { getPatrolList, getRepairOrders } from '@/api/patrol';
+import { ElMessage } from 'element-plus';
 
 const loading = ref(false);
 const activeTab = ref('patrol');
@@ -69,6 +71,12 @@ const fetchData = async () => {
 onMounted(() => {
   fetchData();
 });
+
+const handleExportPatrol = () => {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
+  window.open(`${baseUrl}/kindergarten/patrol/export`, '_blank');
+  ElMessage.success('巡检报表正在导出...');
+};
 </script>
 
 <style scoped>

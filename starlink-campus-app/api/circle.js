@@ -6,3 +6,11 @@ export const getCircleList = () => {
     method: 'GET'
   });
 };
+
+export const publishCircle = (data) => {
+  return request({
+    url: '/kindergarten/class-circle/publish',
+    method: 'POST',
+    data
+  });
+};

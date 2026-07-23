@@ -4,6 +4,7 @@
       <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
         <el-button type="danger" @click="handleCheckOvertime">🚨 一键扫描超时滞留访客</el-button>
         <el-button type="success" @click="dialogVisible = true">+ 新增访客登记</el-button>
+        <el-button type="success" @click="handleExportVisitor">📥 导出访客记录</el-button>
       </div>
 
       <el-table :data="visitors" border style="width: 100%">
@@ -117,6 +118,12 @@ const handleCheckOvertime = async () => {
   } catch (error) {
     ElMessage.error('扫描失败');
   }
+};
+
+const handleExportVisitor = () => {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
+  window.open(`${baseUrl}/kindergarten/visitor/export`, '_blank');
+  ElMessage.success('访客记录正在导出...');
 };
 </script>
 

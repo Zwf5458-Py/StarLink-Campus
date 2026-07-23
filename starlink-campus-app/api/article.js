@@ -6,3 +6,10 @@ export const getArticleList = () => {
     method: 'GET'
   });
 };
+
+export const approveArticle = (id) => {
+  return request({
+    url: `/kindergarten/article/approve/${id}`,
+    method: 'POST'
+  });
+};
