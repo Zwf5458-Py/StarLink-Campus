@@ -13,6 +13,15 @@ import PortalManageView from '@/views/PortalManageView.vue'
 import FamilyCooperationView from '@/views/FamilyCooperationView.vue'
 import PermissionManageView from '@/views/PermissionManageView.vue'
 
+import GrowthRecordView from '@/views/GrowthRecordView.vue'
+import FeeManageView from '@/views/FeeManageView.vue'
+import PickupManageView from '@/views/PickupManageView.vue'
+import WeeklyMenuView from '@/views/WeeklyMenuView.vue'
+import WeeklyPlanView from '@/views/WeeklyPlanView.vue'
+import SurveyManageView from '@/views/SurveyManageView.vue'
+import EnrollmentView from '@/views/EnrollmentView.vue'
+import SalaryView from '@/views/SalaryView.vue'
+
 const routes = [
   { path: '/', name: 'Dashboard', component: DashboardView },
   { path: '/permission', name: 'PermissionManage', component: PermissionManageView },
@@ -27,6 +36,15 @@ const routes = [
   { path: '/visitor', name: 'VisitorManage', component: VisitorManageView },
   { path: '/bigscreen', name: 'BigScreen', component: BigScreenView },
   { path: '/interest', name: 'InterestClassManage', component: InterestClassManageView },
+  
+  { path: '/growth', name: 'GrowthRecord', component: GrowthRecordView },
+  { path: '/fee', name: 'FeeManage', component: FeeManageView },
+  { path: '/pickup', name: 'PickupManage', component: PickupManageView },
+  { path: '/menu', name: 'WeeklyMenu', component: WeeklyMenuView },
+  { path: '/plan', name: 'WeeklyPlan', component: WeeklyPlanView },
+  { path: '/survey', name: 'SurveyManage', component: SurveyManageView },
+  { path: '/enrollment', name: 'Enrollment', component: EnrollmentView },
+  { path: '/salary', name: 'Salary', component: SalaryView },
 ]
 
 const router = createRouter({

@@ -24,7 +24,12 @@
       "style": {
         "navigationBarTitleText": "个人中心"
       }
-    }
+    },
+    { "path": "pages/growth/growth", "style": { "navigationBarTitleText": "孩子成长档案" } },
+    { "path": "pages/fee/fee", "style": { "navigationBarTitleText": "缴费与账单" } },
+    { "path": "pages/menu/menu", "style": { "navigationBarTitleText": "本周食谱" } },
+    { "path": "pages/plan/plan", "style": { "navigationBarTitleText": "教学周计划" } },
+    { "path": "pages/survey/survey", "style": { "navigationBarTitleText": "问卷调查" } }
   ],
   "globalStyle": {
     "navigationBarTextStyle": "black",
