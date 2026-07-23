@@ -11,6 +11,7 @@ public interface AiAssistantService {
     String generateWeeklyPlan(String theme, String targetAge);
     Map<String, Object> analyzeMenuNutrition(List<String> dishes);
     String chatWithKnowledgeBase(String question);
+    String polishText(String text);
     Page<KgAiKnowledgeBase> listKnowledge(String category, Integer pageNum, Integer pageSize);
     boolean addKnowledge(KgAiKnowledgeBase kb);
     boolean deleteKnowledge(Long id);

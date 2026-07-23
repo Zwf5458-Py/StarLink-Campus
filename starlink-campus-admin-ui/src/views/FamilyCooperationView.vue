@@ -112,7 +112,12 @@
     <el-dialog v-model="dialogPost" title="发布班级圈动态" width="480px" custom-class="apple-dialog">
       <el-form ref="postFormRef" :model="postForm" :rules="postRules" label-width="80px">
         <el-form-item label="动态内容" prop="content">
-          <el-input v-model="postForm.content" type="textarea" rows="4" placeholder="分享今天的幼儿园趣事..." />
+          <div style="width: 100%;">
+            <el-input v-model="postForm.content" type="textarea" rows="4" placeholder="输入几个关键词即可（如：小明今天主动分享玩具，午睡很好）" />
+            <div style="margin-top: 8px; text-align: right;">
+              <el-button type="primary" plain size="small" @click="handleAiPolish" :loading="aiPolishing">✨ AI 智能润色</el-button>
+            </div>
+          </div>
         </el-form-item>
         <el-form-item label="关联班级">
           <el-input v-model="postForm.className" placeholder="如: 大(1)班" />
@@ -139,6 +144,29 @@ const activeTab = ref('circle');
 const dialogPost = ref(false);
 const submitLoading = ref(false);
 const postFormRef = ref(null);
+const aiPolishing = ref(false);
+
+const handleAiPolish = async () => {
+  if (!postForm.value.content) {
+    ElMessage.warning('请先输入几个需要润色的关键词');
+    return;
+  }
+  aiPolishing.value = true;
+  try {
+    // 假设后端添加了 /kindergarten/ai/polish-text 接口
+    const res = await request.post('/kindergarten/ai/polish-text', null, {
+      params: { text: postForm.value.content }
+    });
+    if (res.code === 200) {
+      postForm.value.content = res.data;
+      ElMessage.success('✨ AI 润色成功！');
+    }
+  } catch (error) {
+    ElMessage.error('AI 润色失败，请稍后重试');
+  } finally {
+    aiPolishing.value = false;
+  }
+};
 
 const circlePosts = ref([]);
 

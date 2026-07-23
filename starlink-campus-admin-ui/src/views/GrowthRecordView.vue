@@ -58,7 +58,10 @@
           <el-date-picker v-model="form.recordDate" type="date" value-format="YYYY-MM-DD" />
         </el-form-item>
         <el-form-item label="评语" prop="teacherComment">
-          <el-input type="textarea" v-model="form.teacherComment" />
+          <div style="display: flex; gap: 10px; width: 100%;">
+            <el-input type="textarea" v-model="form.teacherComment" placeholder="输入关键字，例如：活泼,喜欢画画" />
+            <el-button type="primary" plain @click="handleAiGenerateComment" :loading="aiGenerating">✨ AI 一键生成</el-button>
+          </div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -133,6 +136,30 @@ const handleDelete = (row: any) => {
     ElMessage.success('删除成功')
     getList()
   }).catch(() => {})
+}
+
+const aiGenerating = ref(false)
+
+const handleAiGenerateComment = async () => {
+  if (!form.teacherComment) {
+    ElMessage.warning('请先输入几个关键词，如：活泼，乐于助人')
+    return
+  }
+  aiGenerating.value = true
+  try {
+    const res = await request.post('/kindergarten/ai/growth-comment', null, {
+      params: { keywords: form.teacherComment, semester: form.semester }
+    })
+    if (res.code === 200) {
+      form.teacherComment = res.data
+      ElMessage.success('AI 评语生成成功！')
+    }
+  } catch (error) {
+    console.error(error)
+    ElMessage.error('AI 生成失败，请稍后重试')
+  } finally {
+    aiGenerating.value = false
+  }
 }
 
 const submitForm = async () => {

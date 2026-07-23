@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.starlink.campus.common.R;
 import com.starlink.campus.module.ai.entity.KgAiKnowledgeBase;
 import com.starlink.campus.module.ai.service.AiAssistantService;
+import com.starlink.campus.module.ai.service.HealthAiService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class AiAssistantController {
 
     @Autowired
     private AiAssistantService aiAssistantService;
+    
+    @Autowired
+    private HealthAiService healthAiService;
 
     @Operation(summary = "AI 生成成长评语")
     @PostMapping("/growth-comment")
@@ -46,6 +50,12 @@ public class AiAssistantController {
         return R.ok(aiAssistantService.analyzeMenuNutrition(dishes));
     }
 
+    @Operation(summary = "AI 智能润色文案")
+    @PostMapping("/polish-text")
+    public R<String> polishText(@RequestParam String text) {
+        return R.ok(aiAssistantService.polishText(text));
+    }
+
     @Operation(summary = "AI 园秘 RAG 智能对话")
     @PostMapping("/chat")
     public R<String> chatWithKnowledgeBase(@RequestParam String question) {
@@ -59,6 +69,12 @@ public class AiAssistantController {
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "20") Integer pageSize) {
         return R.ok(aiAssistantService.listKnowledge(category, pageNum, pageSize));
+    }
+
+    @Operation(summary = "晨检 AI 视觉医疗辅助分析")
+    @PostMapping("/health-analyze")
+    public R<Map<String, Object>> analyzeHealthImage(@RequestParam String imageUrl) {
+        return R.ok(healthAiService.analyzeMedicalImage(imageUrl));
     }
 
     @Operation(summary = "新增 AI 知识库条目")

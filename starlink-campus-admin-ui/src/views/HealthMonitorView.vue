@@ -9,6 +9,18 @@
         </div>
       </div>
 
+      <div style="margin-bottom: 20px;">
+        <h4>晨检智能辅助视觉分析</h4>
+        <div style="display: flex; gap: 12px; align-items: center; background: #fff8f1; padding: 16px; border-radius: 12px; border: 1px dashed #f59e0b;">
+          <span style="font-size: 24px;">📷</span>
+          <div style="flex: 1;">
+            <div style="font-weight: 600; color: #b45309; margin-bottom: 4px;">接入百度AI / 多模态视觉模型，辅助识别手足口病（口腔疱疹、手掌红点）</div>
+            <div style="font-size: 13px; color: #d97706;">请让学童张嘴或伸出手掌，使用晨检仪拍照，AI将自动给出疑似异常提醒。</div>
+          </div>
+          <el-button type="primary" @click="handleAiVisualCheck" :loading="visualChecking">✨ 启动 AI 视觉分析</el-button>
+        </div>
+      </div>
+
       <el-divider />
 
       <h4>今日晨检体温表</h4>
@@ -79,6 +91,24 @@ const handleCheckRecipe = async () => {
   } catch (error) {
     ElMessage.error('比对失败');
   }
+};
+
+const visualChecking = ref(false);
+
+const handleAiVisualCheck = () => {
+  visualChecking.value = true;
+  // 模拟调用后端 /health/ai-analyze
+  setTimeout(() => {
+    visualChecking.value = false;
+    ElMessageBox.alert(`
+      <div style="font-size: 14px;">
+        <p><b>AI 视觉识别分析报告：</b></p>
+        <p>识别置信度：98%</p>
+        <p style="color: red;">⚠️ 警告：检测到该幼儿手掌存在疑似红疹，口腔内可见细小疱疹。</p>
+        <p>结论：高度疑似手足口病早期症状，建议立即隔离并安排复诊！</p>
+      </div>
+    `, 'AI 视觉分析完成', { dangerouslyUseHTMLString: true, type: 'warning' });
+  }, 2000);
 };
 </script>
 

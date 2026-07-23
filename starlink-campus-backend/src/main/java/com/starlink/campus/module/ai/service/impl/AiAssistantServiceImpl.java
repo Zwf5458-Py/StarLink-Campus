@@ -133,6 +133,23 @@ public class AiAssistantServiceImpl implements AiAssistantService {
     }
 
     @Override
+    public String polishText(String text) {
+        log.info("AI 润色文本: {}", text);
+        if (!StringUtils.hasText(text)) {
+            return text;
+        }
+        String prompt = "请作为幼儿园教师，将以下大纲关键词润色为一段温馨、专业、口语化且适合发送给家长的通知或日常动态，要求语句通顺，情感真挚。大纲内容：" + text;
+        try {
+            String polished = aiGatewayService.generateTextAsync(prompt).get(5, java.util.concurrent.TimeUnit.SECONDS);
+            saveLog("TEXT_POLISH", text, polished, 100);
+            return polished;
+        } catch (Exception e) {
+            log.error("调用大模型润色文本失败", e);
+            return "【AI 润色失败】" + text;
+        }
+    }
+
+    @Override
     public Page<KgAiKnowledgeBase> listKnowledge(String category, Integer pageNum, Integer pageSize) {
         Page<KgAiKnowledgeBase> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<KgAiKnowledgeBase> wrapper = new LambdaQueryWrapper<>();
