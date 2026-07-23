@@ -41,6 +41,13 @@
 6. **第六阶段：核心业务模块补全 (24 大功能完全闭环)**
    - 补全了 9 大幼儿园核心业务模块：学生成长档案、在线缴费与账单、接送人安全管理、每周食谱管理、教学周计划、问卷调查与满意度、招生管理、教职工薪酬查询、视频监控接口占位。
    - 完成了对应的前端管理后台页面（8 个 View）及小程序移动端页面（5 个 Page）的业务闭环与全链路联调。
+7. **第七阶段：AI 自动化辅助套件与合规网关建立 (全系统 25 大模块完结)**
+   - **架构设计**：设计并实现 `AiGatewayService` 屏蔽大模型提供商通信细节，引入 `@Async` 与 `CompletableFuture` 异步非阻塞执行模式及 3-5 秒熔断降级逻辑，在 `application.yml` 内配置 `mock` 开关。
+   - **高价值场景 1（晨检视觉分析）**：新增 `HealthAiService` 与 `HealthAiServiceImpl`，前端 `HealthMonitorView.vue` 支持启动 AI 视觉检测手足口病（口腔疱疹、手掌红点）及眼部异常。
+   - **高价值场景 2（内容安全网关重构）**：将 `MockContentSecurityServiceImpl` 从本地关键词升级为调用大模型 `checkTextSecurityAsync` / `checkMediaSecurityAsync` 做语义级违规过滤。
+   - **高价值场景 3（智能评语/排版润色）**：前端在 `GrowthRecordView.vue` 增加“AI一键评语生成”，在 `FamilyCooperationView.vue` 班级圈增加“AI智能润色”，后端由 `polishText` 异步驱动。
+   - **高价值场景 4（食谱营养分析）**：后端 `analyzeMenuNutrition` 提供营养达标评估与建议。
+   - **智能园秘 RAG 知识库**：构建 `KgAiKnowledgeBase` 体系，前端完成管理端 `AiKnowledgeView.vue` 与微信小程序 `pages/ai-chat/ai-chat.vue` 全链路对话闭环。
 
 ## 4. 后续 Agent 接手指南 (System Directives)
 如果你是新开启对话的 AI 助手，请遵循以下规则与上下文：
