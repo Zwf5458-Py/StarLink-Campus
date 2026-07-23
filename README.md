@@ -2,6 +2,8 @@
 
 > **基于 Spring Boot 3 + Vue 3 + 苹果 Liquid Glass 设计系统的全场景智慧校园与幼儿园综合管理平台**
 
+![海星智联数智监管 8 大动态图表看板](docs/images/dashboard_preview.png)
+
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.0-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Vue 3](https://img.shields.io/badge/Vue.js-3.4.0-blue.svg)](https://vuejs.org/)
 [![MyBatis-Plus](https://img.shields.io/badge/MyBatis--Plus-3.5.5-orange.svg)](https://baomidou.com/)
