@@ -45,6 +45,7 @@ public class ContactServiceImpl implements ContactService {
         // 1. Query Staff
         if (staffMapper != null) {
             LambdaQueryWrapper<KgStaff> staffWrapper = new LambdaQueryWrapper<>();
+            staffWrapper.select(KgStaff::getId, KgStaff::getName, KgStaff::getRoleType, KgStaff::getPhone);
             if (StringUtils.hasText(keyword)) {
                 staffWrapper.like(KgStaff::getName, keyword);
             }
@@ -67,13 +68,16 @@ public class ContactServiceImpl implements ContactService {
         if (studentMapper != null) {
             Map<Long, String> classMap = null;
             if (classMapper != null) {
-                List<KgClass> classes = classMapper.selectList(null);
+                LambdaQueryWrapper<KgClass> classWrapper = new LambdaQueryWrapper<>();
+                classWrapper.select(KgClass::getId, KgClass::getClassName);
+                List<KgClass> classes = classMapper.selectList(classWrapper);
                 if (classes != null) {
                     classMap = classes.stream().collect(Collectors.toMap(KgClass::getId, KgClass::getClassName));
                 }
             }
 
             LambdaQueryWrapper<KgStudent> studentWrapper = new LambdaQueryWrapper<>();
+            studentWrapper.select(KgStudent::getId, KgStudent::getName, KgStudent::getGuardianName, KgStudent::getGuardianPhone, KgStudent::getClassId);
             if (StringUtils.hasText(keyword)) {
                 studentWrapper.and(w -> w.like(KgStudent::getGuardianName, keyword).or().like(KgStudent::getName, keyword));
             }

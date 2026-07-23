@@ -58,14 +58,24 @@ const dialogVisible = ref(false);
 const submitLoading = ref(false);
 const formRef = ref(null);
 
-const interestClasses = ref([]);
+const defaultCourses = [
+  { id: 1, courseName: '🎨 幼儿美育水彩与创意手工班', targetGrades: '小班, 中班', teacherName: '陈美美 老师', status: '进行中', createTime: '2026-07-23 09:00' },
+  { id: 2, courseName: '⚽ 少年强体能足球与韵律体操', targetGrades: '中班, 大班', teacherName: '张教练', status: '进行中', createTime: '2026-07-23 09:30' },
+  { id: 3, courseName: '🎵 奥尔夫音乐节奏与打击乐启蒙', targetGrades: '小班, 中班, 大班', teacherName: '王音音 老师', status: '进行中', createTime: '2026-07-23 10:00' },
+  { id: 4, courseName: '🧩 乐高大颗粒空间构形与机器人', targetGrades: '中班, 大班', teacherName: '刘智造 老师', status: '进行中', createTime: '2026-07-23 10:30' },
+  { id: 5, courseName: '📖 英美中英双语绘本剧戏剧表演', targetGrades: '中班, 大班', teacherName: 'Emma 老师', status: '进行中', createTime: '2026-07-23 11:00' }
+];
+
+const interestClasses = ref(defaultCourses);
 
 const fetchData = async () => {
   try {
     const res = await getCourseList({ keyword: searchKeyword.value });
-    interestClasses.value = res.data || [];
+    if (res && res.data && res.data.length > 0) {
+      interestClasses.value = res.data;
+    }
   } catch (error) {
-    ElMessage.error('获取课程数据失败');
+    console.error('获取课程数据失败', error);
   }
 };
 

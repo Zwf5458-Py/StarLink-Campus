@@ -62,6 +62,7 @@ const submitForm = () => {
   }
   
   const payload = {
+    applicantId: 1, // Mock data, usually from login session or parent binding
     applicantName: form.value.studentName + '家长',
     applicantRole: '家长',
     approvalType: '请假申请',

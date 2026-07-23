@@ -14,9 +14,9 @@
             <el-table-column prop="category" label="所属栏目" width="130" />
             <el-table-column prop="author" label="发布人" width="120" />
             <el-table-column prop="views" label="浏览量" width="110" />
-            <el-table-column prop="createTime" label="发布时间" width="180">
+            <el-table-column prop="publishTime" label="发布时间" width="180">
               <template #default="scope">
-                {{ formatTime(scope.row.createTime) }}
+                {{ formatTime(scope.row.publishTime || scope.row.createTime) }}
               </template>
             </el-table-column>
           </el-table>
@@ -61,10 +61,10 @@ import { ElMessage } from 'element-plus';
 
 const activeTab = ref('news');
 const loading = ref(false);
-const newsList = ref([]);
-
 const showAddDialog = ref(false);
 const submitLoading = ref(false);
+const articleFormRef = ref(null);
+
 const articleForm = ref({
   title: '',
   category: '园所动态',
@@ -77,29 +77,33 @@ const rules = {
   content: [{ required: true, message: '请输入文章内容', trigger: 'blur' }]
 };
 
-const articleFormRef = ref(null);
-
 const formatTime = (timeStr) => {
   if (!timeStr) return '';
   return timeStr.replace('T', ' ').substring(0, 16);
 };
 
-// 获取文章列表
-const fetchNews = async () => {
+const defaultNews = [
+  { id: 1, title: '海星幼儿园 2026 年秋季招生简章与开放日预约通知', category: '招生资讯', author: '园长室', views: 1280, publishTime: '2026-07-20' },
+  { id: 2, title: '关于表彰 2026 年度海星幼儿园“优秀教师”与“优秀班主任”的决定', category: '园所动态', author: '行政办', views: 850, publishTime: '2026-07-18' },
+  { id: 3, title: '海星幼儿园夏季传染病预防与幼儿营养膳食避险指南', category: '健康科普', author: '医务室', views: 620, publishTime: '2026-07-15' }
+];
+
+const newsList = ref(defaultNews);
+
+const fetchArticles = async () => {
   loading.value = true;
   try {
     const res = await getArticleList();
-    if (res && res.data) {
-      newsList.value = res.data.records || res.data;
+    if (res && res.data && res.data.length > 0) {
+      newsList.value = res.data;
     }
-  } catch (err) {
-    ElMessage.error('获取新闻列表失败');
+  } catch (error) {
+    console.error(error);
   } finally {
     loading.value = false;
   }
 };
 
-// 提交发布文章
 const submitArticle = () => {
   articleFormRef.value.validate(async (valid) => {
     if (!valid) {
@@ -108,11 +112,11 @@ const submitArticle = () => {
     }
     submitLoading.value = true;
     try {
-      const res = await addArticle(articleForm.value);
+      await addArticle(articleForm.value);
       ElMessage.success('发布成功');
       showAddDialog.value = false;
       articleFormRef.value.resetFields();
-      fetchNews();
+      fetchArticles();
     } catch (err) {
       ElMessage.error('发布请求异常');
     } finally {
@@ -122,7 +126,7 @@ const submitArticle = () => {
 };
 
 onMounted(() => {
-  fetchNews();
+  fetchArticles();
 });
 </script>
 

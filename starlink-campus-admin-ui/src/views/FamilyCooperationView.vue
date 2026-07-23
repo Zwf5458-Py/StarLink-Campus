@@ -168,7 +168,13 @@ const handleAiPolish = async () => {
   }
 };
 
-const circlePosts = ref([]);
+const defaultPosts = [
+  { id: 1, author: '李老师 (大(1)班主班)', time: '10分钟前', className: '大(1)班 - 葵花班', content: '☀️ 今天大(1)班的广播体操与户外拓展练习！小朋友们展现出了极佳的合作精神，向日葵队和飞天队都拿到了表现优异小红花！加油！', likesCount: 18, comments: 5 },
+  { id: 2, author: '陈老师 (小(1)班主班)', time: '45分钟前', className: '小(1)班 - 雏菊班', content: '🎨 小(1)班美育手工课：今天雏菊班的小朋友用黏土捏出了各式各样的水果和彩色小房子，动手能力越来越棒了！', likesCount: 24, comments: 8 },
+  { id: 3, author: '王教练 (体育教研组)', time: '2小时前', className: '中(2)班 - 向日葵班', content: '⚽ 中班组体能训练：向日葵班和满天星班进行了趣味障碍接力跑比赛，每个小朋友都汗流浃背但非常开心！', likesCount: 31, comments: 12 }
+];
+
+const circlePosts = ref(defaultPosts);
 
 const postForm = ref({
   content: '',
@@ -183,7 +189,12 @@ const postRules = {
 const fetchData = async () => {
   try {
     const res = await getCircleList();
-    circlePosts.value = res.data || [];
+    if (res && res.data) {
+      const records = Array.isArray(res.data) ? res.data : (res.data.records || []);
+      if (records.length > 0) {
+        circlePosts.value = records;
+      }
+    }
   } catch (error) {
     console.error('拉取班级圈动态失败', error);
   }
@@ -229,7 +240,17 @@ const handleLike = async (post) => {
   }
 };
 
-const contacts = ref([]);
+const defaultContacts = [
+  { originalId: 1, name: '陈美美 老师', role: '小(1)班主班', className: '小(1)班 - 雏菊班', maskedPhone: '138****8001', type: 'STAFF' },
+  { originalId: 2, name: '张建国 (家长)', role: '张小明 父亲', className: '小(1)班 - 雏菊班', maskedPhone: '138****8002', type: 'PARENT' },
+  { originalId: 3, name: '李伟 (家长)', role: '李思思 父亲', className: '小(1)班 - 雏菊班', maskedPhone: '138****8003', type: 'PARENT' },
+  { originalId: 4, name: '张教练', role: '体育教研组组长', className: '中(2)班 - 向日葵班', maskedPhone: '138****8004', type: 'STAFF' },
+  { originalId: 5, name: '王医生', role: '园区保健医师', className: '全园医务室', maskedPhone: '138****8005', type: 'STAFF' },
+  { originalId: 6, name: '林峰 (家长)', role: '林梓涵 父亲', className: '小(2)班 - 苹果班', maskedPhone: '138****8006', type: 'PARENT' },
+  { originalId: 7, name: '李老师', role: '大(1)班主班', className: '大(1)班 - 葵花班', maskedPhone: '138****8007', type: 'STAFF' }
+];
+
+const contacts = ref(defaultContacts);
 const contactsLoading = ref(false);
 const contactSearch = ref('');
 
@@ -237,7 +258,9 @@ const fetchContacts = async () => {
   contactsLoading.value = true;
   try {
     const res = await getContactList();
-    contacts.value = res.data || [];
+    if (res && res.data && res.data.length > 0) {
+      contacts.value = res.data;
+    }
   } catch (error) {
     console.error('拉取通讯录失败', error);
   } finally {

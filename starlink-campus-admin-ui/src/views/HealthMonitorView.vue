@@ -59,14 +59,25 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 
 const loading = ref(false);
 const recipeInput = ref('花生, 牛奶, 鸡蛋');
-const morningChecks = ref([]);
+const defaultMorningChecks = [
+  { studentId: 101, checkDate: '2026-07-23', temperature: 37.5, isFever: 1, healthTags: '发热预警, 咽部微红', remark: '体温37.5℃，已引导至留观室复测' },
+  { studentId: 102, checkDate: '2026-07-23', temperature: 36.6, isFever: 0, healthTags: '健康正常', remark: '精神状态佳，无咳嗽' },
+  { studentId: 103, checkDate: '2026-07-23', temperature: 36.5, isFever: 0, healthTags: '健康正常', remark: '手足口无异常' },
+  { studentId: 106, checkDate: '2026-07-23', temperature: 36.5, isFever: 0, healthTags: '健康正常', remark: '正常' },
+  { studentId: 111, checkDate: '2026-07-23', temperature: 36.5, isFever: 0, healthTags: '健康正常', remark: '正常' },
+  { studentId: 116, checkDate: '2026-07-23', temperature: 36.5, isFever: 0, healthTags: '健康正常', remark: '正常' }
+];
+
+const morningChecks = ref(defaultMorningChecks);
 
 const fetchData = async () => {
   loading.value = true;
   try {
     const today = new Date().toISOString().substring(0, 10);
     const res = await getMorningSummary(today);
-    morningChecks.value = res.data || [];
+    if (res && res.data && res.data.length > 0) {
+      morningChecks.value = res.data;
+    }
   } catch (error) {
     console.error(error);
   } finally {

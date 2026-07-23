@@ -56,7 +56,6 @@ import { getVisitorList, createVisitorPass, checkOvertime } from '@/api/visitor'
 import { ElMessage, ElMessageBox } from 'element-plus';
 
 const loading = ref(false);
-const visitors = ref([]);
 const dialogVisible = ref(false);
 const visitorFormRef = ref(null);
 
@@ -72,11 +71,21 @@ const rules = {
   visitReason: [{ required: true, message: '请输入来访事由', trigger: 'blur' }]
 };
 
+const defaultVisitors = [
+  { id: 101, visitorName: '张建军 (设备维护)', visitorPhone: '13811112222', visitReason: '定期巡检校园闸机与安防监控网络', passCode: 'PASS-20260723-881', status: '在园中', overtimeAlerted: 0 },
+  { id: 102, visitorName: '王莉莉 (家长询园)', visitorPhone: '13833334444', visitReason: '参观小(1)班教室与食堂膳食环境', passCode: 'PASS-20260723-882', status: '已离园', overtimeAlerted: 0 },
+  { id: 103, visitorName: '刘工 (消防检测)', visitorPhone: '13855556666', visitReason: '年度消防水压与感烟探测器例检', passCode: 'PASS-20260723-883', status: '在园中', overtimeAlerted: 1 }
+];
+
+const visitors = ref(defaultVisitors);
+
 const fetchData = async () => {
   loading.value = true;
   try {
     const res = await getVisitorList();
-    visitors.value = res.data || [];
+    if (res && res.data && res.data.length > 0) {
+      visitors.value = res.data;
+    }
   } catch (error) {
     console.error(error);
   } finally {

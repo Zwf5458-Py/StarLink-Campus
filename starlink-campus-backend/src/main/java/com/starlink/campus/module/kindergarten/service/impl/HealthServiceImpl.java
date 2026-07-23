@@ -36,12 +36,10 @@ public class HealthServiceImpl extends ServiceImpl<KgMorningCheckMapper, KgMorni
 
     @Override
     public Map<String, Object> getMorningSummary(LocalDate date) {
-        LambdaQueryWrapper<KgMorningCheck> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(KgMorningCheck::getCheckDate, date);
-        List<KgMorningCheck> checks = this.list(wrapper);
-        
-        long total = checks.size();
-        long fever = checks.stream().filter(c -> c.getIsFever() != null && c.getIsFever() == 1).count();
+        long total = this.count(new LambdaQueryWrapper<KgMorningCheck>().eq(KgMorningCheck::getCheckDate, date));
+        long fever = this.count(new LambdaQueryWrapper<KgMorningCheck>()
+                .eq(KgMorningCheck::getCheckDate, date)
+                .eq(KgMorningCheck::getIsFever, 1));
         
         Map<String, Object> summary = new HashMap<>();
         summary.put("date", date);

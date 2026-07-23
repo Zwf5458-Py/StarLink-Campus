@@ -18,10 +18,16 @@
       <!-- 搜索过滤 -->
       <div class="search-filter-bar">
         <el-input v-model="searchName" placeholder="搜索幼儿姓名或家长电话..." style="width: 240px;" clearable />
-        <el-select v-model="selectedClassId" placeholder="按班级筛选" style="width: 180px;" clearable>
-          <el-option label="大(1)班 - 葵花班" :value="1" />
-          <el-option label="大(2)班 - 苹果班" :value="2" />
-          <el-option label="中(1)班 - 彩虹班" :value="3" />
+        <el-select v-model="selectedClassId" placeholder="按班级筛选" style="width: 200px;" clearable>
+          <el-option label="小(1)班 - 雏菊班" :value="1" />
+          <el-option label="小(2)班 - 苹果班" :value="2" />
+          <el-option label="小(3)班 - 樱桃班" :value="3" />
+          <el-option label="中(1)班 - 满天星班" :value="4" />
+          <el-option label="中(2)班 - 向日葵班" :value="5" />
+          <el-option label="中(3)班 - 郁金香班" :value="6" />
+          <el-option label="大(1)班 - 葵花班" :value="7" />
+          <el-option label="大(2)班 - 麦穗班" :value="8" />
+          <el-option label="大(3)班 - 飞天班" :value="9" />
         </el-select>
         <button class="apple-btn-primary" @click="fetchData">查询</button>
       </div>

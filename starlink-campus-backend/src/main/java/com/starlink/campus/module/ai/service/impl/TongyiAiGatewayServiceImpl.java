@@ -112,8 +112,8 @@ public class TongyiAiGatewayServiceImpl implements AiGatewayService {
         }
 
         try {
-            simulateNetworkDelay(1000);
-            return CompletableFuture.completedFuture(true);
+            String systemPrompt = "你是一个专业的内容安全审核员。请判断用户输入的文本是否包含违法、色情、暴力、赌博、政治敏感等违规内容。如果安全，只回复'SAFE'；如果违规，只回复'UNSAFE'。";
+            return generateTextAsync(systemPrompt, text).thenApply(result -> !result.toUpperCase().contains("UNSAFE"));
         } catch (Exception e) {
             log.error("[AI Gateway] 调用文本审核API异常", e);
             return CompletableFuture.completedFuture(true);
@@ -131,8 +131,9 @@ public class TongyiAiGatewayServiceImpl implements AiGatewayService {
         }
 
         try {
-            simulateNetworkDelay(1500);
-            return CompletableFuture.completedFuture(true);
+            String systemPrompt = "你是一个专业的内容安全审核员。请判断用户提供的图片是否包含违法、色情、暴力、血腥等违规内容。如果安全，只回复'SAFE'；如果违规，只回复'UNSAFE'。";
+            String userPrompt = "请审核此图片的内容安全性。";
+            return analyzeImageAsync(systemPrompt, userPrompt, mediaUrl).thenApply(result -> !result.toUpperCase().contains("UNSAFE"));
         } catch (Exception e) {
             log.error("[AI Gateway] 调用媒体审核API异常", e);
             return CompletableFuture.completedFuture(true);
@@ -196,8 +197,16 @@ public class TongyiAiGatewayServiceImpl implements AiGatewayService {
             ResponseEntity<String> response = aiRestTemplate.postForEntity(vlEndpoint, entity, String.class);
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 JsonNode rootNode = mapper.readTree(response.getBody());
-                String resultText = rootNode.path("output").path("choices").get(0).path("message").path("content").get(0).path("text").asText();
-                return CompletableFuture.completedFuture(resultText);
+                JsonNode choices = rootNode.path("output").path("choices");
+                if (!choices.isMissingNode() && choices.isArray() && choices.size() > 0) {
+                    JsonNode content = choices.get(0).path("message").path("content");
+                    if (!content.isMissingNode() && content.isArray() && content.size() > 0) {
+                        String resultText = content.get(0).path("text").asText();
+                        return CompletableFuture.completedFuture(resultText);
+                    }
+                }
+                log.error("[AI Gateway] VL API响应结构异常: {}", response.getBody());
+                return CompletableFuture.completedFuture("{\"success\":false,\"error\":\"【AI 熔断降级】系统繁忙，请稍后再试。\"}");
             }
             log.error("[AI Gateway] VL API响应状态异常: {}", response.getStatusCode());
             return CompletableFuture.completedFuture("{\"success\":false,\"error\":\"【AI 熔断降级】系统繁忙，请稍后再试。\"}");

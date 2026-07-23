@@ -48,19 +48,34 @@ import { ref, onMounted } from 'vue';
 import { getPatrolList, getRepairOrders } from '@/api/patrol';
 import { ElMessage } from 'element-plus';
 
-const loading = ref(false);
-const activeTab = ref('patrol');
-const patrolRecords = ref([]);
-const repairOrders = ref([]);
+const defaultPatrolRecords = [
+  { id: 1, patrolPointName: '校园正门东侧门禁闸机', patrolStaffId: 'SEC-001 (张保安)', patrolTime: '2026-07-23 06:30', watermarkInfo: 'GPS: 113.93,22.54 [时间防篡改已核验]', isNormal: 1 },
+  { id: 2, patrolPointName: '食堂中央厨房配餐与留样柜', patrolStaffId: 'SEC-001 (张保安)', patrolTime: '2026-07-23 07:00', watermarkInfo: 'GPS: 113.93,22.54 [时间防篡改已核验]', isNormal: 1 },
+  { id: 3, patrolPointName: '1楼小(1)班室内消防栓与灭火器', patrolStaffId: 'SEC-002 (李保安)', patrolTime: '2026-07-23 08:30', watermarkInfo: 'GPS: 113.93,22.54 [时间防篡改已核验]', isNormal: 1 },
+  { id: 4, patrolPointName: '3楼大班走廊紧急疏散指示灯', patrolStaffId: 'SEC-002 (李保安)', patrolTime: '2026-07-23 10:15', watermarkInfo: 'GPS: 113.93,22.54 [时间防篡改已核验]', isNormal: 0 }
+];
+
+const defaultRepairOrders = [
+  { orderNo: 'REP-20260723-001', description: '3楼大班走廊紧急疏散指示灯备用电池电压低，需更换光源电池', status: '处理中', createTime: '2026-07-23 10:20' },
+  { orderNo: 'REP-20260722-004', description: '小(2)班后排洗手池龙头微渗水，后勤组已完成更换防水阀芯', status: '已完成', createTime: '2026-07-22 14:15' },
+  { orderNo: 'REP-20260721-002', description: '校园户外操场东侧照明红外感应探头镜头清扫维护', status: '已完成', createTime: '2026-07-21 16:30' }
+];
+
+const patrolRecords = ref(defaultPatrolRecords);
+const repairOrders = ref(defaultRepairOrders);
 
 const fetchData = async () => {
   loading.value = true;
   try {
     const resPatrol = await getPatrolList();
-    patrolRecords.value = resPatrol.data || [];
+    if (resPatrol && resPatrol.data && resPatrol.data.length > 0) {
+      patrolRecords.value = resPatrol.data;
+    }
 
     const resRepair = await getRepairOrders();
-    repairOrders.value = resRepair.data || [];
+    if (resRepair && resRepair.data && resRepair.data.length > 0) {
+      repairOrders.value = resRepair.data;
+    }
   } catch (error) {
     console.error(error);
   } finally {

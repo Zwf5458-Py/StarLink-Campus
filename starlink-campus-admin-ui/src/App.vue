@@ -131,14 +131,30 @@
     </el-dialog>
 
     <!-- 5. ⚙️ 园区系统偏好与参数设置 (Modal 弹窗: 支持白天/晚上/跟随系统) -->
-    <el-dialog v-model="showSettingsModal" title="⚙️ 园区系统偏好与主题设置" width="540px" class="apple-modal">
-      <el-form :model="settingsForm" label-width="140px">
+    <el-dialog v-model="showSettingsModal" title="⚙️ 园区系统偏好与主题设置" width="620px" class="apple-modal">
+      <el-form :model="settingsForm" label-width="160px">
         <el-form-item label="外观界面主题">
-          <el-radio-group v-model="settingsForm.themeMode">
+          <el-radio-group v-model="settingsForm.themeMode" style="display: flex; gap: 10px; flex-wrap: wrap;">
             <el-radio label="light">☀️ 白天模式</el-radio>
             <el-radio label="dark">🌙 晚上/深色模式</el-radio>
             <el-radio label="system">💻 跟随系统</el-radio>
           </el-radio-group>
+        </el-form-item>
+        <el-form-item label="AI 大模型平台">
+          <el-select v-model="settingsForm.aiPlatform" placeholder="请选择大模型平台" style="width: 100%;">
+            <el-option label="通义千问 (Qwen-Max)" value="qwen" />
+            <el-option label="智谱清言 (ChatGLM)" value="zhipu" />
+            <el-option label="百川智能 (Baichuan)" value="baichuan" />
+            <el-option label="月之暗面 (Kimi)" value="moonshot" />
+            <el-option label="本地部署模型 (Ollama/LM Studio)" value="local" />
+            <el-option label="其他自定义 (API URL/KEY)" value="custom" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="API 接口地址" v-if="settingsForm.aiPlatform === 'custom' || settingsForm.aiPlatform === 'local'">
+          <el-input v-model="settingsForm.customApiUrl" placeholder="例如: http://localhost:11434/api/generate" />
+        </el-form-item>
+        <el-form-item label="API Key 凭证" v-if="settingsForm.aiPlatform === 'custom'">
+          <el-input v-model="settingsForm.customApiKey" type="password" placeholder="请输入 API Key 凭证" show-password />
         </el-form-item>
         <el-form-item label="晨检发热警告阈值">
           <el-input-number v-model="settingsForm.feverTemp" :precision="1" :step="0.1" :min="36.5" :max="39.0" />
@@ -161,13 +177,30 @@
         <button class="apple-btn-primary" @click="saveSettings">保存参数与主题设置</button>
       </template>
     </el-dialog>
+
+    <!-- 6. 🔍 搜索结果中心 (Modal 弹窗) -->
+    <el-dialog v-model="showSearchModal" title="🔍 全域搜索结果" width="560px" class="apple-modal">
+      <div v-if="searchResults.length === 0" style="text-align: center; color: #94a3b8; padding: 20px;">
+        未找到相关数据
+      </div>
+      <div v-else class="notice-list">
+        <div v-for="(item, index) in searchResults" :key="index" class="notice-item-card" style="cursor: pointer" @click="goToResult(item.path)">
+          <div class="notice-top">
+            <span class="notice-type-tag" style="color: #0071e3">{{ item.category }}</span>
+          </div>
+          <div class="notice-title">{{ item.text }}</div>
+          <div class="notice-content">点击前往关联模块 👉</div>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
+import request from '@/utils/request';
 
 const router = useRouter();
 const route = useRoute();
@@ -175,23 +208,50 @@ const route = useRoute();
 const searchQuery = ref('');
 const showNoticeModal = ref(false);
 const showSettingsModal = ref(false);
+const showSearchModal = ref(false);
+const searchResults = ref([]);
 
 const activeRoute = computed(() => route.path);
 
-const noticeList = ref([
-  { id: 1, type: 'danger', typeText: '🩺 晨检发热预警', time: '10 分钟前', title: '小(1)班 雏菊班 晨检异常', content: '检测到学生 [张小明] 体温 37.5℃，已由保健医王医生复测并引导至留观室。' },
-  { id: 2, type: 'warning', typeText: '⏳ OA 审批提醒', time: '25 分钟前', title: '待园长终审申请', content: '大班李老师提交了 [急性咽喉炎请假 1 天] 申请，请及时在线审批。' },
-  { id: 3, type: 'warning', typeText: '🎫 访客滞留告警', time: '40 分钟前', title: '校园安防滞留提醒', content: '访客 [王先生 (设备维护)] 在园区停留时间已超出 15 分钟，安防系统已发送警报。' }
-]);
-
+const noticeList = ref([]);
 const unreadCount = computed(() => noticeList.value.length);
 
 const settingsForm = ref({
-  themeMode: 'light', // light, dark, system
+  themeMode: 'light',
+  aiPlatform: 'qwen',
+  customApiUrl: '',
+  customApiKey: '',
   feverTemp: 37.3,
   overtimeMinutes: 15,
   refundRate: 20,
   wsEnable: true
+});
+
+const fetchNotices = async () => {
+  try {
+    const res = await request.get('/notification/unread');
+    if (res && res.data) {
+      noticeList.value = res.data;
+    }
+  } catch (error) {
+    console.error("加载消息中心失败", error);
+  }
+};
+
+const fetchSettings = async () => {
+  try {
+    const res = await request.get('/kindergarten/system/config');
+    if (res && res.data) {
+      settingsForm.value = { ...settingsForm.value, ...res.data };
+    }
+  } catch (error) {
+    console.error("加载系统配置失败", error);
+  }
+};
+
+onMounted(() => {
+  fetchNotices();
+  fetchSettings();
 });
 
 const themeClass = computed(() => {
@@ -236,10 +296,23 @@ const navigate = (path) => {
   router.push(path);
 };
 
-const handleSearch = () => {
+const handleSearch = async () => {
   if (searchQuery.value) {
-    ElMessage.info(`正在全域检索关键词: "${searchQuery.value}"`);
+    try {
+      const res = await request.get(`/search?q=${encodeURIComponent(searchQuery.value)}`);
+      if (res && res.data) {
+        searchResults.value = res.data;
+        showSearchModal.value = true;
+      }
+    } catch (error) {
+      ElMessage.error('全域检索失败');
+    }
   }
+};
+
+const goToResult = (path) => {
+  showSearchModal.value = false;
+  router.push(path);
 };
 
 const clearNotices = () => {
@@ -247,10 +320,15 @@ const clearNotices = () => {
   ElMessage.success('已全部标记为已读！');
 };
 
-const saveSettings = () => {
-  showSettingsModal.value = false;
-  const modeText = settingsForm.value.themeMode === 'light' ? '☀️ 白天模式' : settingsForm.value.themeMode === 'dark' ? '🌙 晚上深色模式' : '💻 跟随系统模式';
-  ElMessage.success(`🎉 参数已成功保存！当前界面外观已应用: ${modeText}`);
+const saveSettings = async () => {
+  try {
+    await request.put('/kindergarten/system/config', settingsForm.value);
+    showSettingsModal.value = false;
+    const modeText = settingsForm.value.themeMode === 'light' ? '☀️ 白天模式' : settingsForm.value.themeMode === 'dark' ? '🌙 晚上深色模式' : '💻 跟随系统模式';
+    ElMessage.success(`🎉 参数已成功保存至服务端！当前界面外观已应用: ${modeText}`);
+  } catch (error) {
+    ElMessage.error('保存设置失败');
+  }
 };
 </script>
 

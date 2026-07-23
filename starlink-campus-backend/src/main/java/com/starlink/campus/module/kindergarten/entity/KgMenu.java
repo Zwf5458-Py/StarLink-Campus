@@ -17,7 +17,7 @@ public class KgMenu implements Serializable {
     private String component;
     private String perms;
     private String icon;
-    private Integer menuType;
+    private String menuType;
     private Integer orderNum;
     private Integer status;
 
@@ -43,8 +43,8 @@ public class KgMenu implements Serializable {
     public String getIcon() { return icon; }
     public void setIcon(String icon) { this.icon = icon; }
 
-    public Integer getMenuType() { return menuType; }
-    public void setMenuType(Integer menuType) { this.menuType = menuType; }
+    public String getMenuType() { return menuType; }
+    public void setMenuType(String menuType) { this.menuType = menuType; }
 
     public Integer getOrderNum() { return orderNum; }
     public void setOrderNum(Integer orderNum) { this.orderNum = orderNum; }

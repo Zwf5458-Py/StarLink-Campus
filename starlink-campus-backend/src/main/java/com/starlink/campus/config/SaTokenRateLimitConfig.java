@@ -7,7 +7,10 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+
 import java.io.IOException;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -48,10 +51,18 @@ public class SaTokenRateLimitConfig implements HandlerInterceptor {
         String clientIp = getClientIp(request);
         String key = "rate_limit:" + clientIp + ":" + uri;
 
-        Long count = stringRedisTemplate.opsForValue().increment(key);
-        if (count != null && count == 1) {
-            stringRedisTemplate.expire(key, WINDOW_MS, TimeUnit.SECONDS);
-        }
+        String luaScript = 
+            "local current = redis.call('incr', KEYS[1]) " +
+            "if tonumber(current) == 1 then " +
+            "    redis.call('expire', KEYS[1], ARGV[1]) " +
+            "end " +
+            "return current";
+            
+        DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
+        redisScript.setScriptText(luaScript);
+        redisScript.setResultType(Long.class);
+
+        Long count = stringRedisTemplate.execute(redisScript, Collections.singletonList(key), String.valueOf(WINDOW_MS));
 
         if (count != null && count > MAX_REQUESTS) {
             response.setStatus(429);

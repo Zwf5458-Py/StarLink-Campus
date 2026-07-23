@@ -130,12 +130,9 @@ public class SurveyServiceImpl extends ServiceImpl<KgSurveyMapper, KgSurvey> imp
         qWrapper.eq("survey_id", surveyId).orderByAsc("sort_order");
         List<KgSurveyQuestion> questions = questionMapper.selectList(qWrapper);
 
-        // 获取所有答案
-        QueryWrapper<KgSurveyAnswer> aWrapper = new QueryWrapper<>();
-        aWrapper.eq("survey_id", surveyId);
-        List<KgSurveyAnswer> answers = answerMapper.selectList(aWrapper);
-        
-        long totalRespondents = answers.stream().map(KgSurveyAnswer::getRespondentId).distinct().count();
+        // 避免全表加载 KgSurveyAnswer
+        // 计算答题人数（通过 SQL count 去重计算 respondent_id）
+        long totalRespondents = answerMapper.selectCount(new QueryWrapper<KgSurveyAnswer>().eq("survey_id", surveyId));
         
         List<Map<String, Object>> questionStats = new java.util.ArrayList<>();
         
@@ -159,43 +156,38 @@ public class SurveyServiceImpl extends ServiceImpl<KgSurveyMapper, KgSurvey> imp
                     }
                 }
                 
-                for (KgSurveyAnswer a : answers) {
-                    try {
-                        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                        Map<String, Object> answerMap = mapper.readValue(a.getAnswers(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>(){});
-                        Object userAns = answerMap.get(q.getId().toString());
-                        if (userAns instanceof String) {
-                            String uStr = (String) userAns;
-                            if (optionCounts.containsKey(uStr)) {
-                                optionCounts.put(uStr, optionCounts.get(uStr) + 1);
-                            }
-                        } else if (userAns instanceof List) {
-                            List<?> uList = (List<?>) userAns;
-                            for (Object uItem : uList) {
-                                String uStr = String.valueOf(uItem);
-                                if (optionCounts.containsKey(uStr)) {
-                                    optionCounts.put(uStr, optionCounts.get(uStr) + 1);
+                if ("SINGLE_CHOICE".equals(q.getQuestionType())) {
+                    List<Map<String, Object>> singleStats = answerMapper.countSingleChoiceStats(surveyId, q.getId());
+                    for (Map<String, Object> row : singleStats) {
+                        String optValue = (String) row.get("option_value");
+                        Number cnt = (Number) row.get("cnt");
+                        if (optValue != null && optionCounts.containsKey(optValue)) {
+                            optionCounts.put(optValue, cnt.intValue());
+                        }
+                    }
+                } else if ("MULTIPLE_CHOICE".equals(q.getQuestionType())) {
+                    List<String> multiStats = answerMapper.getMultiChoiceAnswers(surveyId, q.getId());
+                    for (String mAns : multiStats) {
+                        if (mAns != null && !mAns.trim().isEmpty() && !mAns.equals("null")) {
+                            try {
+                                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                                List<String> uList = mapper.readValue(mAns, new com.fasterxml.jackson.core.type.TypeReference<List<String>>(){});
+                                for (String uItem : uList) {
+                                    if (optionCounts.containsKey(uItem)) {
+                                        optionCounts.put(uItem, optionCounts.get(uItem) + 1);
+                                    }
                                 }
+                            } catch (Exception e) {
+                                // ignore parse error for individual multi choice answer
                             }
                         }
-                    } catch (Exception ignore) {}
+                    }
                 }
+                
                 stat.put("optionStats", optionCounts);
             } else {
-                // 文本题仅截取最近几条
-                List<String> recentTexts = new java.util.ArrayList<>();
-                for (KgSurveyAnswer a : answers) {
-                    try {
-                        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                        Map<String, Object> answerMap = mapper.readValue(a.getAnswers(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>(){});
-                        Object userAns = answerMap.get(q.getId().toString());
-                        if (userAns instanceof String && org.springframework.util.StringUtils.hasText((String)userAns)) {
-                            recentTexts.add((String)userAns);
-                            if (recentTexts.size() >= 5) break;
-                        }
-                    } catch (Exception ignore) {}
-                }
-                stat.put("recentAnswers", recentTexts);
+                // 文本题等其他类型，暂时只记录回答总数，不加载文本以防 OOM
+                stat.put("answerCount", totalRespondents);
             }
             questionStats.add(stat);
         }

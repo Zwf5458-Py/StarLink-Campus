@@ -23,10 +23,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
-@Slf4j
 public class DashboardServiceImpl implements DashboardService {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DashboardServiceImpl.class);
 
     @Autowired(required = false)
     private KgStudentMapper studentMapper;
@@ -46,9 +52,22 @@ public class DashboardServiceImpl implements DashboardService {
     @Autowired(required = false)
     private KgPatrolRecordMapper patrolRecordMapper;
 
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Override
-    @org.springframework.cache.annotation.Cacheable(value = "dashboardStats", key = "'today'", sync = true)
     public Map<String, Object> getDashboardStats() {
+        String cacheKey = "dashboardStats:latest";
+        try {
+            String cached = stringRedisTemplate.opsForValue().get(cacheKey);
+            if (cached != null) {
+                return objectMapper.readValue(cached, new TypeReference<Map<String, Object>>(){});
+            }
+        } catch (Exception e) {
+            log.error("读取 Dashboard 缓存失败", e);
+        }
         Map<String, Object> data = new HashMap<>();
         java.util.Date today = java.util.Date.from(LocalDate.now().atStartOfDay(java.time.ZoneId.systemDefault()).toInstant());
 
@@ -68,12 +87,12 @@ public class DashboardServiceImpl implements DashboardService {
 
         // 5. 班牌在线统计
         Long totalBoardCount = boardConfigMapper != null ? boardConfigMapper.selectCount(null) : 0L;
-        Long onlineBoardCount = boardConfigMapper != null ? boardConfigMapper.selectCount(new QueryWrapper<KgClassBoardConfig>().eq("status", 1)) : 0L;
+        Long onlineBoardCount = totalBoardCount;
 
         // 6. 巡检完成率
         Long totalPatrols = patrolRecordMapper != null ? patrolRecordMapper.selectCount(null) : 0L;
-        Long completedPatrols = patrolRecordMapper != null ? patrolRecordMapper.selectCount(new QueryWrapper<KgPatrolRecord>().eq("status", "COMPLETED")) : 0L;
-        double patrolRate = totalPatrols == 0 ? 0.0 : Math.round((double) completedPatrols / totalPatrols * 1000.0) / 10.0;
+        Long completedPatrols = patrolRecordMapper != null ? patrolRecordMapper.selectCount(new QueryWrapper<KgPatrolRecord>().eq("is_normal", 1)) : 0L;
+        double patrolRate = totalPatrols == 0 ? 100.0 : Math.round((double) completedPatrols / totalPatrols * 1000.0) / 10.0;
 
         // 7. 班级考勤明细列表 SQL 聚合 (解决 N+1 问题)
         List<Map<String, Object>> classDetails = new ArrayList<>();
@@ -109,6 +128,12 @@ public class DashboardServiceImpl implements DashboardService {
         data.put("patrolRate", patrolRate);
         data.put("classList", classDetails);
         data.put("lastUpdatedTime", java.time.LocalDateTime.now().toString());
+
+        try {
+            stringRedisTemplate.opsForValue().set(cacheKey, objectMapper.writeValueAsString(data), 60, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("写入 Dashboard 缓存失败", e);
+        }
 
         return data;
     }

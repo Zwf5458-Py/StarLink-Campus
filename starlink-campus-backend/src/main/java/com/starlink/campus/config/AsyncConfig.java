@@ -25,6 +25,18 @@ public class AsyncConfig {
         return executor;
     }
 
+    @Bean("applicationTaskExecutor")
+    public ThreadPoolTaskExecutor applicationTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(8);
+        executor.setMaxPoolSize(16);
+        executor.setQueueCapacity(100);
+        executor.setThreadNamePrefix("app-async-");
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.initialize();
+        return executor;
+    }
+
     @Bean("aiRestTemplate")
     public RestTemplate aiRestTemplate() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();

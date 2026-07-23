@@ -95,13 +95,15 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="操作" width="170" fixed="right">
+          <el-table-column label="操作" width="200" fixed="right">
             <template #default="scope">
-              <template v-if="scope.row.status === '待审批'">
-                <button class="action-btn pass" @click="handleApprove(scope.row)">同意</button>
-                <button class="action-btn reject" @click="handleReject(scope.row)">驳回</button>
-              </template>
-              <button class="action-btn detail" @click="showDetail(scope.row)">流程图</button>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-start;">
+                <template v-if="scope.row.status === '待审批'">
+                  <button class="action-btn pass" @click="handleApprove(scope.row)">同意</button>
+                  <button class="action-btn reject" @click="handleReject(scope.row)">驳回</button>
+                </template>
+                <button class="action-btn detail" @click="showDetail(scope.row)">流程图</button>
+              </div>
             </template>
           </el-table-column>
         </el-table>

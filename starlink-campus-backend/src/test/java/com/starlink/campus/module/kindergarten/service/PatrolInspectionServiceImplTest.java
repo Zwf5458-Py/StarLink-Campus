@@ -1,5 +1,8 @@
 package com.starlink.campus.module.kindergarten.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.starlink.campus.module.kindergarten.entity.KgPatrolPoint;
+import com.starlink.campus.module.kindergarten.mapper.KgPatrolPointMapper;
 import com.starlink.campus.module.kindergarten.entity.KgPatrolRecord;
 import com.starlink.campus.module.kindergarten.entity.KgRepairOrder;
 import com.starlink.campus.module.kindergarten.mapper.KgPatrolRecordMapper;
@@ -13,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,10 +40,18 @@ public class PatrolInspectionServiceImplTest {
         // Mockito annotations are initialized by MockitoExtension
     }
 
+    @Mock
+    private KgPatrolPointMapper patrolPointMapper;
+
     @Test
     public void testGenerateTasks() {
         Long staffId = 101L;
 
+        KgPatrolPoint p1 = new KgPatrolPoint();
+        p1.setPointName("大门岗亭");
+        p1.setStatus(1);
+
+        when(patrolPointMapper.selectList(any(QueryWrapper.class))).thenReturn(Arrays.asList(p1, p1, p1, p1, p1));
         when(patrolRecordMapper.insert(any(KgPatrolRecord.class))).thenReturn(1);
 
         boolean result = patrolInspectionService.generateTasks(staffId);

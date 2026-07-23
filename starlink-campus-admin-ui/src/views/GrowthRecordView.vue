@@ -19,6 +19,13 @@
       <el-table-column prop="category" label="类别" />
       <el-table-column prop="recordValue" label="记录值" />
       <el-table-column prop="recordDate" label="日期" />
+      <el-table-column label="多媒体" width="120">
+        <template #default="scope">
+          <el-icon v-if="scope.row.videoUrl" style="color: #6366f1; font-size: 20px;"><VideoCamera /></el-icon>
+          <el-icon v-else-if="scope.row.photoUrl" style="color: #10b981; font-size: 20px;"><Picture /></el-icon>
+          <span v-else>-</span>
+        </template>
+      </el-table-column>
       <el-table-column prop="teacherComment" label="教师评语" show-overflow-tooltip />
       <el-table-column prop="semester" label="学期" />
       <el-table-column label="操作" width="150">
@@ -57,6 +64,21 @@
         <el-form-item label="日期" prop="recordDate">
           <el-date-picker v-model="form.recordDate" type="date" value-format="YYYY-MM-DD" />
         </el-form-item>
+        <el-form-item label="视频/照片" prop="videoUrl">
+          <el-upload
+            class="upload-demo"
+            action="/api/kindergarten/upload"
+            :limit="1"
+            accept="video/*,image/*"
+            :on-success="handleUploadSuccess"
+          >
+            <el-button type="primary" plain>点击上传媒体 (Video/Img)</el-button>
+          </el-upload>
+          <div v-if="form.videoUrl" style="margin-top: 10px; width: 100%;">
+            <video v-if="form.videoUrl.endsWith('.mp4')" :src="form.videoUrl" controls style="max-height: 150px; border-radius: 8px;"></video>
+            <img v-else :src="form.videoUrl" style="max-height: 150px; border-radius: 8px;" />
+          </div>
+        </el-form-item>
         <el-form-item label="评语" prop="teacherComment">
           <div style="display: flex; gap: 10px; width: 100%;">
             <el-input type="textarea" v-model="form.teacherComment" placeholder="输入关键字，例如：活泼,喜欢画画" />
@@ -76,6 +98,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import request from '@/utils/request'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { VideoCamera, Picture } from '@element-plus/icons-vue'
 
 const loading = ref(false)
 const tableData = ref([])
@@ -94,8 +117,10 @@ const form = reactive({
   category: '',
   recordValue: '',
   recordDate: '',
+  photoUrl: '',
+  videoUrl: '',
   teacherComment: '',
-  semester: '2024春季'
+  semester: '2026春'
 })
 
 const getList = async () => {
@@ -120,8 +145,20 @@ const handleSearch = () => {
 
 const handleAdd = () => {
   dialogTitle.value = '新增成长记录'
-  Object.assign(form, { id: null, studentId: '', category: '', recordValue: '', recordDate: '', teacherComment: '' })
+  Object.assign(form, { id: null, studentId: '', category: '', recordValue: '', recordDate: '', teacherComment: '', photoUrl: '', videoUrl: '' })
   dialogVisible.value = true
+}
+
+const handleUploadSuccess = (res) => {
+  if (res && res.data) {
+    if (res.data.includes('.mp4') || res.data.includes('.mov')) {
+       form.videoUrl = res.data;
+    } else {
+       form.photoUrl = res.data;
+       form.videoUrl = res.data; // fallback preview binding
+    }
+    ElMessage.success('媒体上传成功');
+  }
 }
 
 const handleEdit = (row: any) => {

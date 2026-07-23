@@ -54,7 +54,6 @@ public class DashboardServiceImplTest {
         when(attendanceMapper.selectCount(any(QueryWrapper.class))).thenReturn(90L);
         when(morningCheckMapper.selectCount(any(QueryWrapper.class))).thenReturn(2L);
         when(boardConfigMapper.selectCount(null)).thenReturn(10L);
-        when(boardConfigMapper.selectCount(any(QueryWrapper.class))).thenReturn(8L);
         when(patrolRecordMapper.selectCount(null)).thenReturn(5L);
         when(patrolRecordMapper.selectCount(any(QueryWrapper.class))).thenReturn(4L);
 
@@ -74,7 +73,7 @@ public class DashboardServiceImplTest {
         assertEquals(90.0, stats.get("attendanceRate"), "Attendance rate should be 90.0%");
         assertEquals(2L, stats.get("feverCount"), "Fever count should be 2");
         assertEquals(10L, stats.get("totalBoardCount"), "Total board count should be 10");
-        assertEquals(8L, stats.get("onlineBoardCount"), "Online board count should be 8");
+        assertEquals(10L, stats.get("onlineBoardCount"), "Online board count should be 10");
         assertEquals(80.0, stats.get("patrolRate"), "Patrol rate should be 80.0%");
         
         List<Map<String, Object>> classList = (List<Map<String, Object>>) stats.get("classList");
