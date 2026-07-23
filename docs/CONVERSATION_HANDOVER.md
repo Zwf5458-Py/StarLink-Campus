@@ -48,6 +48,20 @@
    - **高价值场景 3（智能评语/排版润色）**：前端在 `GrowthRecordView.vue` 增加“AI一键评语生成”，在 `FamilyCooperationView.vue` 班级圈增加“AI智能润色”，后端由 `polishText` 异步驱动。
    - **高价值场景 4（食谱营养分析）**：后端 `analyzeMenuNutrition` 提供营养达标评估与建议。
    - **智能园秘 RAG 知识库**：构建 `KgAiKnowledgeBase` 体系，前端完成管理端 `AiKnowledgeView.vue` 与微信小程序 `pages/ai-chat/ai-chat.vue` 全链路对话闭环。
+8. **第八阶段：短期优化与中期完善研发 (架构闭环与性能演进)**
+   - **短期性能与防御**：
+     - 多模态响应解析防护 NPE，Redis 限流切换为 Lua 原子脚本。
+     - Dashboard 缓存键引入 60s TTL 自动刷新；全表扫描重构为 SQL 聚合 (Health/Contact)。
+     - 消息中心 `/notification/unread`、全局搜索 `/search`、系统设置 `/system/config` 彻底对接真实后端 API。
+   - **中期业务完善**：
+     - **问卷透视**：通过 MySQL `JSON_EXTRACT` + `GROUP BY` 下推聚合，消除答卷全量内存读取的 OOM 隐患。
+     - **视频档案**：`KgGrowthRecord` 扩展 `video_url`，管理端 `GrowthRecordView.vue` 支持 MP4 视频沉浸式预览与上传。
+     - **微信生态**：引入 `weixin-java-mp` 与 `weixin-java-pay` 依赖，搭建 `WxMpConfiguration` 及 `WxPayConfiguration` 微信能力总线。
+     - **家校 OA 联动**：小程序申请请假通过后，自动在 `KgStudentAttendance` 插入 `LEAVE` 考勤记录。
+     - **测试网构建**：新增 `AiContentSecurityServiceImplTest` 及 `SurveyServiceImplTest`，所有 24 个 JUnit 用例 100% 通过。
+   - **项目资产同步**：
+     - 全量代码知识图谱使用 `codebase-memory-mcp` CLI 重新建立（90,957 节点，349,607 边）。
+     - 代码提交至 Git 并同步 Push 到 `origin/main`。
 
 ## 4. 后续 Agent 接手指南 (System Directives)
 如果你是新开启对话的 AI 助手，请遵循以下规则与上下文：
