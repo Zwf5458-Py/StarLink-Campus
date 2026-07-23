@@ -1,42 +1,41 @@
 package com.starlink.campus.module.kindergarten.service.impl;
 
+import com.starlink.campus.module.ai.service.AiGatewayService;
 import com.starlink.campus.module.kindergarten.service.ContentSecurityService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
- * 内容安全审核 Mock 实现
- * 本地开发/测试环境使用，生产环境应替换为真实服务实现
- *
- * 替换步骤：
- * 1. 创建 WechatContentSecurityServiceImpl 实现 ContentSecurityService 接口
- * 2. 使用 @Profile("prod") 标注生产实现
- * 3. 本 Mock 类添加 @Profile("!prod") 条件注解
+ * 真实内容安全审核服务实现 (接入 AI 网关)
+ * 替代原有的 MockContentSecurityServiceImpl
  */
 @Service
 public class MockContentSecurityServiceImpl implements ContentSecurityService {
 
     private static final Logger log = LoggerFactory.getLogger(MockContentSecurityServiceImpl.class);
-    private static final List<String> SENSITIVE_WORDS = Arrays.asList(
-        "暴力", "色情", "恐怖", "涉政", "反动", "赌博", "毒品"
-    );
+
+    @Autowired
+    private AiGatewayService aiGatewayService;
 
     @Override
     public boolean checkTextSecurity(String content) {
         if (content == null || content.trim().isEmpty()) {
             return true;
         }
-        for (String word : SENSITIVE_WORDS) {
-            if (content.contains(word)) {
-                log.warn("[Mock 内容安全] 文本包含敏感词: {}", word);
-                return false;
-            }
+        try {
+            // 调用统一 AI 网关进行真正的语义级别大模型审核
+            // 设置超时时间，保证不阻塞主线程过久
+            return aiGatewayService.checkTextSecurityAsync(content)
+                    .get(3, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("[内容安全] 文本审核网关调用超时或异常，降级通过", e);
+            // 降级策略: 遇到大模型不可用时，暂时放行，后续可转入人工后台离线复审队列
+            return true;
         }
-        return true;
     }
 
     @Override
@@ -44,10 +43,13 @@ public class MockContentSecurityServiceImpl implements ContentSecurityService {
         if (mediaUrl == null || mediaUrl.trim().isEmpty()) {
             return true;
         }
-        if (mediaUrl.contains("illegal") || mediaUrl.contains("porn") || mediaUrl.contains("violence")) {
-            log.warn("[Mock 内容安全] 媒体文件涉嫌违规: {}", mediaUrl);
-            return false;
+        try {
+            // 调用统一 AI 网关进行多模态视觉审核
+            return aiGatewayService.checkMediaSecurityAsync(mediaUrl)
+                    .get(5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("[内容安全] 媒体审核网关调用超时或异常，降级通过: {}", mediaUrl, e);
+            return true;
         }
-        return true;
     }
 }

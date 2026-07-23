@@ -49,3 +49,8 @@ starlink:
   refund:
     absent-threshold: 5
     daily-amount: 20
+  ai:
+    gateway:
+      mock: true
+      endpoint: "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation"
+      api-key: "sk-mock-key"

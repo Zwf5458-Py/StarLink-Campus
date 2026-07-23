@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import com.starlink.campus.module.ai.service.AiGatewayService;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -32,6 +33,9 @@ public class AiAssistantServiceImpl implements AiAssistantService {
     @Autowired
     private KgAiLogMapper aiLogMapper;
 
+    @Autowired
+    private AiGatewayService aiGatewayService;
+
     @Override
     public String generateGrowthComment(Long studentId, String keywords, String semester) {
         log.info("AI 生成成长评语请求: studentId={}, keywords={}, semester={}", studentId, keywords, semester);
@@ -45,35 +49,31 @@ public class AiAssistantServiceImpl implements AiAssistantService {
             ? template.getPromptPattern().replace("{keywords}", keywords).replace("{semester}", semester)
             : "关键词：" + keywords;
 
-        // 模拟智能大模型生成 (DeepSeek/Qwen 兼容算子)
-        String generatedComment = String.format(
-            "【AI 教师评语】在%s学期中，孩子展现出了极其出色的成长潜力！在日常生活与学习中：%s。" +
-            "不仅能与同伴友好相处，还表现出强烈的探索欲望和动手能力。老师希望在新的学期里，" +
-            "能继续保持这份热情，勇敢尝试新事物，成长为更加自信棒棒的小懂事！",
-            StringUtils.hasText(semester) ? semester : "本",
-            StringUtils.hasText(keywords) ? keywords : "表现积极活跃，乐于助人"
-        );
-
-        saveLog("GROWTH_COMMENT", prompt, generatedComment, 180);
-        return generatedComment;
+        try {
+            // 调用网关获取真实的 AI 生成内容（同步等待最多5秒）
+            String generatedComment = aiGatewayService.generateTextAsync(prompt).get(5, java.util.concurrent.TimeUnit.SECONDS);
+            saveLog("GROWTH_COMMENT", prompt, generatedComment, 180);
+            return generatedComment;
+        } catch (Exception e) {
+            log.error("调用大模型生成评语失败", e);
+            return "【系统提示】AI 助手暂时繁忙，建议人工填写。";
+        }
     }
 
     @Override
     public String generateWeeklyPlan(String theme, String targetAge) {
         log.info("AI 生成教学周计划: theme={}, targetAge={}", theme, targetAge);
         
-        String planResult = String.format(
-            "【AI 教学周计划建议 - 主题：%s (适用年龄：%s)】\n" +
-            "1. 健康领域：通过《%s》主题户外拓展，提升幼儿大肌肉协调能力与平衡感。\n" +
-            "2. 语言领域：引导幼儿讲述与“%s”相关的日常生活故事，丰富词汇表达。\n" +
-            "3. 社会领域：分组合作完成主题任务，培养团队分享与礼貌交往意识。\n" +
-            "4. 科学领域：观察记录相关自然与生活现象，激发好奇心与探究欲。\n" +
-            "5. 艺术领域：开展《色彩与创意》美工绘画制作，鼓励个性化表达。",
-            theme, StringUtils.hasText(targetAge) ? targetAge : "中大班", theme, theme
-        );
-
-        saveLog("WEEKLY_PLAN", theme + " | " + targetAge, planResult, 220);
-        return planResult;
+        String prompt = String.format("请围绕主题“%s”，为%s班级生成一份教学周计划，包含五大领域的简要建议。", theme, targetAge);
+        
+        try {
+            String planResult = aiGatewayService.generateTextAsync(prompt).get(5, java.util.concurrent.TimeUnit.SECONDS);
+            saveLog("WEEKLY_PLAN", theme + " | " + targetAge, planResult, 220);
+            return planResult;
+        } catch (Exception e) {
+            log.error("调用大模型生成周计划失败", e);
+            return "【系统提示】AI 周计划生成失败，请稍后重试。";
+        }
     }
 
     @Override
