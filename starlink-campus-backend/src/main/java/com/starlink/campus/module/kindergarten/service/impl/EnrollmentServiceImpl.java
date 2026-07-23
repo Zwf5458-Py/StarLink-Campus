@@ -31,6 +31,10 @@ public class EnrollmentServiceImpl extends ServiceImpl<KgEnrollmentMapper, KgEnr
         return page(new Page<>(pageNum, pageSize), queryWrapper);
     }
 
+    private static final Map<String, Object> FUNNEL_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
+    private static volatile long lastCacheTime = 0L;
+    private static final long CACHE_TTL_MS = 60000L; // 60秒缓存
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean add(KgEnrollment enrollment) {
@@ -38,18 +42,21 @@ public class EnrollmentServiceImpl extends ServiceImpl<KgEnrollmentMapper, KgEnr
         if (StringUtils.isBlank(enrollment.getStatus())) {
             enrollment.setStatus("意向");
         }
+        clearCache();
         return save(enrollment);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean update(KgEnrollment enrollment) {
+        clearCache();
         return updateById(enrollment);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean delete(Long id) {
+        clearCache();
         return removeById(id);
     }
 
@@ -59,11 +66,17 @@ public class EnrollmentServiceImpl extends ServiceImpl<KgEnrollmentMapper, KgEnr
         KgEnrollment enrollment = new KgEnrollment();
         enrollment.setId(id);
         enrollment.setStatus(newStatus);
+        clearCache();
         return updateById(enrollment);
     }
 
     @Override
     public Map<String, Object> getFunnelStats() {
+        long now = System.currentTimeMillis();
+        if (!FUNNEL_CACHE.isEmpty() && (now - lastCacheTime < CACHE_TTL_MS)) {
+            return new HashMap<>(FUNNEL_CACHE);
+        }
+
         Map<String, Map<String, Object>> counts = this.baseMapper.countByStatus();
         
         long intent = getCount(counts, "意向");
@@ -83,13 +96,22 @@ public class EnrollmentServiceImpl extends ServiceImpl<KgEnrollmentMapper, KgEnr
         stats.put("面试中", interviewing);
         stats.put("已录取", admitted);
         stats.put("已放弃", abandoned);
-        stats.put("conversionRate", conversionRate);
+        stats.put("conversionRate", Math.round(conversionRate * 10.0) / 10.0);
+
+        FUNNEL_CACHE.clear();
+        FUNNEL_CACHE.putAll(stats);
+        lastCacheTime = now;
         
         return stats;
     }
 
+    private void clearCache() {
+        FUNNEL_CACHE.clear();
+        lastCacheTime = 0L;
+    }
+
     private long getCount(Map<String, Map<String, Object>> counts, String status) {
-        if (counts.containsKey(status) && counts.get(status).get("count") != null) {
+        if (counts != null && counts.containsKey(status) && counts.get(status) != null && counts.get(status).get("count") != null) {
             return ((Number) counts.get(status).get("count")).longValue();
         }
         return 0L;

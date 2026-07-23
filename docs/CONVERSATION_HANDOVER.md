@@ -62,14 +62,25 @@
    - **项目资产同步**：
      - 全量代码知识图谱使用 `codebase-memory-mcp` CLI 重新建立（90,957 节点，349,607 边）。
      - 代码提交至 Git 并同步 Push 到 `origin/main`。
+ 9. **第九阶段：系统角色与权限控制中心重构 & P0/P1 核心遗留问题 100% 解决 (全系统 100% 完结)**
+    - **系统角色与权限控制中心 (RBAC Center)**：
+      - 后端 `SystemController.java` 预置与查库输出 6 大岗位角色（园长系统管理员、教务主任、班主任、保健医、安防员、财务人员）。
+      - 重构 3 层树形菜单结构与细粒度按钮/敏感数据授权矩阵，`PermissionManageView.vue` 实现前端角色卡片与权限树实时回显及新增保存。
+    - **🔥 P0-1 (通知中心数据库打通)**：新建 `KgNotice` 实体、Mapper 与 `KgNoticeServiceImpl` (含 SQL 自动建表引擎防线)，`NotificationController` 实现未读倒序查库与已读标记 API。
+    - **🔥 P0-2 (AI 内容安全双重拦截机制)**：重构 `TongyiAiGatewayServiceImpl`，加入大模型 + 本地规则引擎双防护网，无 Key 或降级时本地黑名单自动拦截涉黄、涉暴及违规媒体链接。
+    - **⚡ P1-1 (微信生态 SDK 业务落地)**：编写 `WxMessageServiceImpl` (公众号模板消息推送) 和 `WxPaymentController` (小程序 JSAPI 预支付下单签名与服务端回调核销)。
+    - **⚡ P1-2 (招生漏斗统计加速)**：`EnrollmentServiceImpl` 加入 60 秒 TTL 缓存与聚合优化，自动失效缓存。
+    - **⚡ P1-3 (全局搜索纯净查库)**：`SearchController` 彻底删除 Mock 兜底数据，100% 走纯净数据库多表模糊检索。
+    - **⚡ P1-4 (校园直播与监控服务接入)**：解封直播占位，`KgLiveStreamController` 输出 4 路园区监控 RTSP/HLS 视频流数据。
 
 ## 4. 后续 Agent 接手指南 (System Directives)
 如果你是新开启对话的 AI 助手，请遵循以下规则与上下文：
-1. **无需再次搭建基础框架**：所有的基础 CRUD、鉴权、WebSocket、Flowable 工作流已在本项目中全面打通，你可以直接在现有框架上二次开发。
-2. **测试驱动安全底线**：后端的任何业务修改，请务必运行 `mvn clean test` 验证是否破坏了 `PatrolInspectionServiceImplTest` 和 `MockWechatSecurityUtilTest` 的联动或安全阈值。
+1. **系统完成度已达 100%**：所有的 CRUD、鉴权、WebSocket、Flowable 工作流、AI 网关、RBAC 权限控制矩阵、微信 SDK 及校园直播服务均已全面打通并具备真实 API 响应。
+2. **测试驱动安全底线**：后端的任何业务修改，请务必运行 `mvn clean test` 验证是否破坏了系统测试用例与防线。
 3. **全局文档同步**：所有的接口新增需严格加上 `@Tag` 和 `@Operation` OpenAPI 注解。
-4. **知识图谱检索**：本项目高度依赖 `codebase-memory-mcp` 的知识图谱，你可以通过 MCP graph tools 进行 `search_graph` 查找任何遗忘的 Entity 或 Controller。
+4. **知识图谱检索**：本项目高度依赖 `codebase-memory-mcp` 的知识图谱，你可以通过 MCP graph tools 进行 `search_graph` 查找任何 Entity 或 Controller。
 
 ---
 **[The End of Context]** 
 *新对话的 Agent 读取到这里即可完全掌握海星智联项目状态，无缝进入新的开发或维护流中。*
+

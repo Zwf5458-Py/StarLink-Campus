@@ -101,42 +101,69 @@ public class TongyiAiGatewayServiceImpl implements AiGatewayService {
     @Async("aiExecutor")
     @Override
     public CompletableFuture<Boolean> checkTextSecurityAsync(String text) {
-        log.info("[AI Gateway] 开始异步文本安全审核, mock模式={}", isMock);
-        if (isMock || apiKey.isEmpty()) {
-            simulateNetworkDelay(500);
-            boolean safe = !(text.contains("暴力") || text.contains("色情") || text.contains("赌博"));
-            if (!safe) {
-                log.warn("[AI Gateway] 文本包含基础敏感词 (Mock Fallback)");
-            }
-            return CompletableFuture.completedFuture(safe);
+        log.info("[AI Gateway] 开始文本安全审核, text length={}, mock模式={}", text != null ? text.length() : 0, isMock);
+        if (text == null || text.trim().isEmpty()) {
+            return CompletableFuture.completedFuture(true);
+        }
+
+        // 本地敏感词后备拦截器 (防假通过安全网关)
+        boolean hasLocalSensitive = text.contains("涉黄") || text.contains("赌博") || text.contains("暴力") || text.contains("毒品") || text.contains("炸药") || text.contains("色情");
+        if (hasLocalSensitive) {
+            log.warn("[AI Gateway] 本地黑名单安全引擎检测到违规敏感词！直接拦截。");
+            return CompletableFuture.completedFuture(false);
+        }
+
+        if (isMock || apiKey == null || apiKey.trim().isEmpty()) {
+            simulateNetworkDelay(300);
+            return CompletableFuture.completedFuture(true);
         }
 
         try {
             String systemPrompt = "你是一个专业的内容安全审核员。请判断用户输入的文本是否包含违法、色情、暴力、赌博、政治敏感等违规内容。如果安全，只回复'SAFE'；如果违规，只回复'UNSAFE'。";
-            return generateTextAsync(systemPrompt, text).thenApply(result -> !result.toUpperCase().contains("UNSAFE"));
+            return generateTextAsync(systemPrompt, text).thenApply(result -> {
+                if (result == null || result.contains("熔断降级")) {
+                    // 大模型熔断降级时，依靠本地规则防线
+                    return !hasLocalSensitive;
+                }
+                return !result.toUpperCase().contains("UNSAFE");
+            });
         } catch (Exception e) {
             log.error("[AI Gateway] 调用文本审核API异常", e);
-            return CompletableFuture.completedFuture(true);
+            return CompletableFuture.completedFuture(!hasLocalSensitive);
         }
     }
 
     @Async("aiExecutor")
     @Override
     public CompletableFuture<Boolean> checkMediaSecurityAsync(String mediaUrl) {
-        log.info("[AI Gateway] 开始异步多模态媒体安全审核, URL={}, mock模式={}", mediaUrl, isMock);
-        if (isMock || apiKey.isEmpty()) {
-            simulateNetworkDelay(800);
-            boolean safe = !(mediaUrl.contains("illegal") || mediaUrl.contains("porn"));
-            return CompletableFuture.completedFuture(safe);
+        log.info("[AI Gateway] 开始多模态媒体安全审核, URL={}, mock模式={}", mediaUrl, isMock);
+        if (mediaUrl == null || mediaUrl.trim().isEmpty()) {
+            return CompletableFuture.completedFuture(true);
+        }
+
+        boolean hasLocalViolation = mediaUrl.contains("illegal") || mediaUrl.contains("porn") || mediaUrl.contains("violent") || mediaUrl.contains("bloody");
+        if (hasLocalViolation) {
+            log.warn("[AI Gateway] 本地安全网关检测到媒体文件链接违规，拦截！");
+            return CompletableFuture.completedFuture(false);
+        }
+
+        if (isMock || apiKey == null || apiKey.trim().isEmpty()) {
+            simulateNetworkDelay(500);
+            return CompletableFuture.completedFuture(true);
         }
 
         try {
             String systemPrompt = "你是一个专业的内容安全审核员。请判断用户提供的图片是否包含违法、色情、暴力、血腥等违规内容。如果安全，只回复'SAFE'；如果违规，只回复'UNSAFE'。";
             String userPrompt = "请审核此图片的内容安全性。";
-            return analyzeImageAsync(systemPrompt, userPrompt, mediaUrl).thenApply(result -> !result.toUpperCase().contains("UNSAFE"));
+            return analyzeImageAsync(systemPrompt, userPrompt, mediaUrl).thenApply(result -> {
+                if (result == null || result.contains("熔断降级")) {
+                    return !hasLocalViolation;
+                }
+                return !result.toUpperCase().contains("UNSAFE");
+            });
         } catch (Exception e) {
             log.error("[AI Gateway] 调用媒体审核API异常", e);
-            return CompletableFuture.completedFuture(true);
+            return CompletableFuture.completedFuture(!hasLocalViolation);
         }
     }
 

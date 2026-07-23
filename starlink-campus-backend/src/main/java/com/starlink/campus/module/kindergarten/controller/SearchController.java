@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/search")
+@RequestMapping("/search")
 public class SearchController {
 
     @Autowired(required = false)
@@ -71,15 +71,6 @@ public class SearchController {
                         results.add(createResult("安防巡检", p.getPatrolPointName(), "/patrol"));
                     }
                 } catch (Exception ignore) {}
-            }
-            
-            // Mock 数据作为后备（针对前端静态页面演示）
-            if (results.isEmpty()) {
-                if (q.contains("张") || q.contains("张小明")) {
-                    results.add(createResult("幼儿档案", "张小明 (男) - 小(1)班", "/student"));
-                } else if (q.contains("王") || q.contains("请假")) {
-                    results.add(createResult("OA审批", "王老师的请假申请", "/oa"));
-                }
             }
         }
 
