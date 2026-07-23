@@ -11,10 +11,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import cn.dev33.satoken.annotation.SaCheckLogin;
+import com.starlink.campus.module.kindergarten.service.WechatSyncService;
 import jakarta.validation.Valid;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 @Tag(name = "校园门户CMS管理")
 @SaCheckLogin
@@ -26,12 +28,18 @@ public class KgArticleController {
     @Autowired
     private KgArticleService articleService;
 
+    @Autowired
+    private WechatSyncService wechatSyncService;
+
     @Operation(summary = "获取文章列表")
     @GetMapping("/list")
-    public R<List<KgArticle>> list() {
+    public R<Page<KgArticle>> list(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "20") Integer pageSize) {
+        Page<KgArticle> page = new Page<>(pageNum, pageSize);
         QueryWrapper<KgArticle> query = new QueryWrapper<>();
         query.orderByDesc("create_time");
-        return R.ok(articleService.list(query));
+        return R.ok(articleService.page(page, query));
     }
 
     @Operation(summary = "新增文章")
@@ -67,14 +75,15 @@ public class KgArticleController {
         return R.fail("文章不存在或状态不正确");
     }
 
-    @Operation(summary = "同步文章到微信")
+    @Operation(summary = "异步同步文章到微信")
     @PostMapping("/sync-wechat/{id}")
     public R<Boolean> syncWechat(@PathVariable Long id) {
         KgArticle article = articleService.getById(id);
         if (article != null && "已发布".equals(article.getStatus())) {
-            System.out.println("[Mock Wechat Sync] Successfully synced article to Wechat: " + article.getTitle());
-            article.setSyncStatus("已同步");
-            return R.ok(articleService.updateById(article));
+            wechatSyncService.syncArticle(article);
+            article.setSyncStatus("同步中");
+            articleService.updateById(article);
+            return R.ok(true);
         }
         return R.fail("文章不存在或尚未发布");
     }

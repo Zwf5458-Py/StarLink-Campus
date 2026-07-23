@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 @Tag(name = "安防巡检管理")
 @SaCheckLogin
@@ -32,8 +33,10 @@ public class KgPatrolController {
 
     @Operation(summary = "获取巡检记录列表")
     @GetMapping("/list")
-    public R<List<KgPatrolRecord>> getPatrolList() {
-        return R.ok(patrolInspectionService.getPatrolList());
+    public R<Page<KgPatrolRecord>> getPatrolList(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "20") Integer pageSize) {
+        return R.ok(patrolInspectionService.getPatrolList(pageNum, pageSize));
     }
 
     @Operation(summary = "提交巡检记录")

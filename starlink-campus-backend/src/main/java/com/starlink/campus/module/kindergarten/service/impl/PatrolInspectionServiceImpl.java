@@ -23,6 +23,7 @@ import java.util.UUID;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 @Service
 public class PatrolInspectionServiceImpl extends ServiceImpl<KgPatrolRecordMapper, KgPatrolRecord> implements PatrolInspectionService {
@@ -62,6 +63,12 @@ public class PatrolInspectionServiceImpl extends ServiceImpl<KgPatrolRecordMappe
             order.setCreateTime(LocalDateTime.now());
             repairOrderMapper.insert(order);
         }
+    }
+
+    @Override
+    public Page<KgPatrolRecord> getPatrolList(Integer pageNum, Integer pageSize) {
+        Page<KgPatrolRecord> page = new Page<>(pageNum, pageSize);
+        return this.page(page);
     }
 
     @Override

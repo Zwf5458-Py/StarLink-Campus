@@ -10,4 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class KgClassCircleServiceImpl extends ServiceImpl<KgClassCircleMapper, KgClassCircle> implements KgClassCircleService {
+
+    @Override
+    public boolean atomicLike(Long id) {
+        return this.baseMapper.incrementLikes(id) > 0;
+    }
 }

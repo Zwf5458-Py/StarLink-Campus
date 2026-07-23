@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 @Service
 public class VisitorServiceImpl extends ServiceImpl<KgVisitorRecordMapper, KgVisitorRecord> implements VisitorService {
@@ -78,6 +79,12 @@ public class VisitorServiceImpl extends ServiceImpl<KgVisitorRecordMapper, KgVis
             this.updateById(record);
         }
         return overtimeList;
+    }
+
+    @Override
+    public Page<KgVisitorRecord> getVisitorList(Integer pageNum, Integer pageSize) {
+        Page<KgVisitorRecord> page = new Page<>(pageNum, pageSize);
+        return this.page(page);
     }
 
     @Override

@@ -7,8 +7,11 @@ import com.starlink.campus.module.kindergarten.entity.KgPatrolRoute;
 import java.util.List;
 import java.util.Map;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+
 public interface PatrolInspectionService extends IService<KgPatrolRecord> {
     void submitPatrol(KgPatrolRecord record);
+    Page<KgPatrolRecord> getPatrolList(Integer pageNum, Integer pageSize);
     List<KgPatrolRecord> getPatrolList();
     List<KgRepairOrder> getRepairOrders();
     boolean generateTasks(Long staffId);

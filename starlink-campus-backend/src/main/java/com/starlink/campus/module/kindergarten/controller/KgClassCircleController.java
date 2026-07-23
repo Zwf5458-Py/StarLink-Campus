@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 /**
  * 班级圈与家园互动 API
@@ -26,21 +27,24 @@ public class KgClassCircleController {
     private KgClassCircleService classCircleService;
 
     @Autowired
-    private com.starlink.campus.common.utils.MockWechatSecurityUtil securityUtil;
+    private com.starlink.campus.module.kindergarten.service.ContentSecurityService contentSecurityService;
 
     @GetMapping("/list")
-    public R<List<KgClassCircle>> list() {
+    public R<Page<KgClassCircle>> list(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "20") Integer pageSize) {
+        Page<KgClassCircle> page = new Page<>(pageNum, pageSize);
         QueryWrapper<KgClassCircle> query = new QueryWrapper<>();
         query.orderByDesc("publish_time");
-        return R.ok(classCircleService.list(query));
+        return R.ok(classCircleService.page(page, query));
     }
 
     @PostMapping("/post")
     public R<Boolean> post(@Valid @RequestBody KgClassCircle circle) {
-        if (!securityUtil.checkTextSecurity(circle.getContent())) {
+        if (!contentSecurityService.checkTextSecurity(circle.getContent())) {
             return R.fail("发布失败，内容包含违规敏感词！");
         }
-        if (!securityUtil.checkMediaSecurity(circle.getMediaUrls())) {
+        if (!contentSecurityService.checkMediaSecurity(circle.getMediaUrls())) {
             return R.fail("发布失败，媒体文件涉嫌违规！");
         }
         
@@ -52,10 +56,9 @@ public class KgClassCircleController {
 
     @PostMapping("/like/{id}")
     public R<Boolean> like(@PathVariable Long id) {
-        KgClassCircle circle = classCircleService.getById(id);
-        if (circle != null) {
-            circle.setLikes(circle.getLikes() + 1);
-            return R.ok(classCircleService.updateById(circle));
+        boolean success = classCircleService.atomicLike(id);
+        if (success) {
+            return R.ok(true);
         }
         return R.fail("记录不存在");
     }

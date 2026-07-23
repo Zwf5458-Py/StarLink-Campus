@@ -14,6 +14,7 @@ import java.util.*;
 import com.starlink.campus.common.utils.ExcelExportUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 @Tag(name = "访客通行管理")
 @SaCheckLogin
 @RestController
@@ -25,8 +26,10 @@ public class KgVisitorController {
     private VisitorService visitorService;
 
     @GetMapping("/list")
-    public R<List<KgVisitorRecord>> getVisitorList() {
-        return R.ok(visitorService.getVisitorList());
+    public R<Page<KgVisitorRecord>> getVisitorList(
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "20") Integer pageSize) {
+        return R.ok(visitorService.getVisitorList(pageNum, pageSize));
     }
 
     @PostMapping("/create-pass")
