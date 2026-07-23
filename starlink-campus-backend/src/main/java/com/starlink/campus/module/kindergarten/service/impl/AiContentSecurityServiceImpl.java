@@ -14,9 +14,9 @@ import java.util.concurrent.TimeUnit;
  * 替代原有的 MockContentSecurityServiceImpl
  */
 @Service
-public class MockContentSecurityServiceImpl implements ContentSecurityService {
+public class AiContentSecurityServiceImpl implements ContentSecurityService {
 
-    private static final Logger log = LoggerFactory.getLogger(MockContentSecurityServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(AiContentSecurityServiceImpl.class);
 
     @Autowired
     private AiGatewayService aiGatewayService;

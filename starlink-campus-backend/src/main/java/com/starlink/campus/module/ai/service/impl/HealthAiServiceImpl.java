@@ -26,23 +26,29 @@ public class HealthAiServiceImpl implements HealthAiService {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("imageUrl", imageUrl);
         
+        String systemPrompt = "你是一名拥有10年经验的儿科医生。请分析用户提供的图片，重点检查幼儿手掌、口腔、足底是否存在红色斑点或水疱（手足口病早期特征）。" +
+                "你必须且只能输出严格合法的 JSON，绝对不能包含 markdown 标记或额外文字。JSON 包含字段：\n" +
+                "1. success (布尔型，固定返回 true)\n" +
+                "2. confidence (字符串，置信度，如'95%')\n" +
+                "3. hasWarning (布尔型，是否发现疑似红疹/水疱)\n" +
+                "4. symptoms (字符串，发现的具体症状，无则写'未发现明显异常')\n" +
+                "5. conclusion (字符串，最终诊断建议)";
+        String userPrompt = "请分析这张幼儿晨检照片是否存在手足口病或其他常见皮肤病症状。";
+
         try {
-            // 此处在真实的生产环境中，通过 AiGatewayService 调用百度医疗AI接口或多模态大模型
-            // boolean isSafe = aiGatewayService.checkMediaSecurityAsync(imageUrl).get(5, TimeUnit.SECONDS);
+            String jsonResult = aiGatewayService.analyzeImageAsync(systemPrompt, userPrompt, imageUrl).get(15, TimeUnit.SECONDS);
+            jsonResult = jsonResult.replace("```json", "").replace("```", "").trim();
             
-            // 为了保证流程闭环，暂时提供智能模拟算子返回。通过 Thread.sleep 模拟真实 API 延迟。
-            Thread.sleep(1500);
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            Map<String, Object> aiMap = mapper.readValue(jsonResult, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>(){});
+            result.putAll(aiMap);
             
-            result.put("success", true);
-            result.put("confidence", "98%");
-            result.put("hasWarning", true);
-            result.put("symptoms", "疑似红疹, 口腔细小疱疹");
-            result.put("conclusion", "高度疑似手足口病早期症状，建议立即隔离并安排复诊！");
-            
-            log.warn("AI 医疗影像识别出异常: {}", result);
+            if (Boolean.TRUE.equals(result.get("hasWarning"))) {
+                log.warn("AI 医疗影像识别出异常: {}", result);
+            }
             return result;
         } catch (Exception e) {
-            log.error("AI 医疗影像分析异常", e);
+            log.error("AI 医疗影像分析异常或返回格式不正确", e);
             result.put("success", false);
             result.put("error", "AI 分析引擎暂时不可用，建议转人工判断");
             return result;

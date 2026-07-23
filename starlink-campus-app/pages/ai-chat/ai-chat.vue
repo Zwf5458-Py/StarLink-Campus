@@ -32,6 +32,7 @@
 
 <script setup lang="ts">
 import { ref, nextTick } from 'vue'
+import { request } from '@/utils/request.js'
 
 interface Message {
   role: 'user' | 'ai'
@@ -58,23 +59,17 @@ const sendQuestion = () => {
   loading.value = true
   scrollToBottom()
 
-  uni.request({
-    url: 'http://localhost:8080/api/kindergarten/ai/chat?question=' + encodeURIComponent(q),
-    method: 'POST',
-    header: {
-      'satoken': uni.getStorageSync('token') || ''
-    },
-    success: (res: any) => {
-      const reply = res.data?.data || '抱歉，暂时未能查询到相关规则。'
-      messages.value.push({ role: 'ai', content: reply })
-    },
-    fail: () => {
-      messages.value.push({ role: 'ai', content: '网络较繁忙，请稍后重试。' })
-    },
-    complete: () => {
-      loading.value = false
-      scrollToBottom()
-    }
+  request({
+    url: '/kindergarten/ai/chat?question=' + encodeURIComponent(q),
+    method: 'POST'
+  }).then((res: any) => {
+    const reply = res.data || '抱歉，暂时未能查询到相关规则。'
+    messages.value.push({ role: 'ai', content: reply })
+  }).catch(() => {
+    messages.value.push({ role: 'ai', content: '网络较繁忙，请稍后重试。' })
+  }).finally(() => {
+    loading.value = false
+    scrollToBottom()
   })
 }
 

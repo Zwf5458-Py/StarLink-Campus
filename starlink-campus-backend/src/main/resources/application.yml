@@ -51,6 +51,6 @@ starlink:
     daily-amount: 20
   ai:
     gateway:
-      mock: true
+      mock: false
       endpoint: "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation"
-      api-key: "sk-mock-key"
+      api-key: "${AI_API_KEY:sk-mock-key}"

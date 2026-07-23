@@ -25,7 +25,8 @@ public class SaTokenRateLimitConfig implements HandlerInterceptor {
     private static final String[] RATE_LIMITED_PATHS = {
         "/kindergarten/attendance/check-in",
         "/kindergarten/attendance/check-out",
-        "/kindergarten/circle/like"
+        "/kindergarten/circle/like",
+        "/kindergarten/ai"
     };
 
     private final ConcurrentHashMap<String, WindowCounter> counterMap = new ConcurrentHashMap<>();
