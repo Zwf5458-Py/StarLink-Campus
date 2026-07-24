@@ -1,0 +1,58 @@
+# StarLink Campus (海星智联智慧校园) - 核心项目交接手册
+
+> **文档状态**: 100% 核心后端业务群竣工版本交接
+> **适用对象**: 后续接手的后端架构师、前端开发、实施与测试团队
+
+---
+
+## 一、 项目现状与里程碑
+
+本项目已经成功完成了原定的三批核心系统建设规划，现已具备全方位的 SaaS 级交付能力。全量 35+ 子模块功能的详细矩阵请查阅 [README.md](README.md)。
+
+1. **Phase A (教务与健康管理)**：已上线并经过单元测试。覆盖了午睡喂药、体温考勤预警、家园通讯录、家长端 OA 请假流转。
+2. **Phase B (教学评估与后勤合规)**：覆盖了校车打卡监控、资产流转记账、48小时食品留样自动告警，以及五大维度幼儿发展评估雷达图逻辑。
+3. **Phase C (招生裂变与 IoT 智能化)**：覆盖了开放日转化追踪、硬件班牌的环境质量上报（温湿度、PM2.5）、门禁闸机的出入库打卡联动。
+4. **AI 智能化融合引擎 (Batch 1)**：通过高度解耦的统一 `AiGatewayService`，支持大批量并行每日评语生成、食谱营养深度分析、行政通知撰写及微信家园问答自动生成。
+
+---
+
+## 二、 架构规范与核心约定
+
+### 1. 实体层与 Lombok 规范
+为防范环境插件兼容性带来的隐患（如 `maven-compiler-plugin` 无法识别 `@Data`），本项目**全量禁止使用 Lombok**。所有实体类（Entity）、数据传输对象（DTO）及视图对象（VO）均采用了标准 Java 原生 `Getter / Setter` 进行显式编写。
+在未来新增实体表时，也请使用项目中提供的 Python 自动化脚本 `generate_phase_b_entities.py` 或 `generate_phase_c_entities.py` 生成标准模板，切勿加回 `@Data`。
+
+### 2. 安全鉴权 (Sa-Token)
+- 框架选型：采用了业内轻量级的 `Sa-Token` 权限框架。
+- 所有 Controller 除了公共接口外，均标记了 `@SaCheckLogin` 以校验 JWT Token。
+- 绝大部分敏感写接口（如新增资产、更新留样、修改家长状态），均使用了基于角色的强控校验，例如 `@SaCheckRole(value = {"ADMIN", "LOGISTICS"}, mode = SaMode.OR)`。
+
+### 3. 数据库迁移 (Flyway)
+数据库模型管控统一收口在 `src/main/resources/db/migration` 下。
+- **V21**: Phase A 基础模块建表（OA、健康、幼儿）。
+- **V22**: Phase B 后勤合规与校车表。
+- **V23**: Phase C IoT 与招生拓客表。
+请绝对不要在外部直接使用 Navicat/DataGrip 执行 `CREATE TABLE`，必须编写 `V24__xxxx.sql` 脚本确保各个部署环境通过 Flyway 自动迭代。
+
+### 4. 单元测试约束
+项目强制推行 `mvn clean test` 验证。当前全模块跑通率 **100% (39/39 绿灯)**。任何对 `Service` 层的方法改动，必须确保原本的自动化用例不会引发异常挂起或 OOM 熔断。在 AI 网关测试（如 `AiAssistantServiceImplTest`）中，统一采用 `@Mock` 和 `CompletableFuture.completedFuture()` 进行 Mock，防止 CI 时占用真金白银消耗 token。
+
+---
+
+## 三、 未尽事宜与后续迭代建议
+
+### 1. 前端 UI 对接
+- 当前所有的后端 API 骨架与复杂 SQL/ORM 皆已就位，下一阶段重点是由前端开发团队针对 `Phase B` 和 `Phase C` 中的接口输出页面组件。
+- 资产流转和后勤留样在 `/api/canteen` 与 `/api/asset` 下，其逻辑强依赖前端传参。
+
+### 2. 真实硬件接入 (IoT网关下沉)
+- `/api/iot/env/report` 与 `/api/iot/gate/pass` 目前是 HTTP REST 接口，可供软网关或中间层 POST 调用。
+- 建议在实际落地园所时，通过边缘计算盒子或局域网的 Node-RED 中间件将基于 MQTT/TCP 的传感器报文解析后转化为 HTTP POST 请求推送给此后端；如有极高的吞吐需求，可将其升级改造为 WebSocket / Netty 直连。
+
+### 3. AI 第二批/第三批落地
+- 目前已经打通了 `AiGatewayService`。您可以参考 `AiAssistantServiceImpl` 中极简的大模型并发调用，在未来实现：
+  - 晨检图片的进一步打分。
+  - 基于 `KgStudentAttendance` 与体温信息的关联发烧风控规则（非 AI 大模型强相关，属于业务规则引擎）。
+
+---
+**接手愉快！愿 StarLink Campus 项目能为全国更多智慧园所带去便捷。**

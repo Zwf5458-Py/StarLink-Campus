@@ -1,0 +1,109 @@
+import os
+
+entity_dir = "starlink-campus-backend/src/main/java/com/starlink/campus/module/kindergarten/entity"
+mapper_dir = "starlink-campus-backend/src/main/java/com/starlink/campus/module/kindergarten/mapper"
+
+entities = {
+    "KgOpenDayEvent": [
+        ("Long", "id"),
+        ("String", "eventTitle"),
+        ("java.time.LocalDateTime", "eventDate"),
+        ("String", "location"),
+        ("Integer", "capacity"),
+        ("Integer", "enrolledCount"),
+        ("String", "status"),
+        ("java.time.LocalDateTime", "createTime")
+    ],
+    "KgReferralRecord": [
+        ("Long", "id"),
+        ("Long", "referrerParentId"),
+        ("String", "newFamilyName"),
+        ("String", "contactPhone"),
+        ("String", "referralStatus"),
+        ("String", "rewardStatus"),
+        ("java.time.LocalDateTime", "createTime"),
+        ("java.time.LocalDateTime", "updateTime")
+    ],
+    "KgGraduateRecord": [
+        ("Long", "id"),
+        ("Long", "studentId"),
+        ("Integer", "graduationYear"),
+        ("String", "primarySchoolName"),
+        ("String", "futureDirection"),
+        ("String", "contactInfo"),
+        ("java.time.LocalDateTime", "createTime")
+    ],
+    "KgEnvironmentMonitor": [
+        ("Long", "id"),
+        ("Long", "classId"),
+        ("java.math.BigDecimal", "temperature"),
+        ("java.math.BigDecimal", "humidity"),
+        ("Integer", "co2Level"),
+        ("Integer", "pm25Level"),
+        ("Integer", "warningTriggered"),
+        ("java.time.LocalDateTime", "recordTime")
+    ],
+    "KgSmartGateRecord": [
+        ("Long", "id"),
+        ("String", "personType"),
+        ("Long", "personId"),
+        ("String", "gateNo"),
+        ("String", "passDirection"),
+        ("String", "passMethod"),
+        ("String", "captureImage"),
+        ("java.time.LocalDateTime", "passTime")
+    ]
+}
+
+def convert_to_snake_case(name):
+    import re
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+for class_name, fields in entities.items():
+    table_name = convert_to_snake_case(class_name)
+    
+    # Generate Entity
+    entity_code = f"""package com.starlink.campus.module.kindergarten.entity;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+
+@TableName("{table_name}")
+public class {class_name} {{
+"""
+    # fields
+    for t, n in fields:
+        if n == "id":
+            entity_code += f"    @TableId(type = IdType.AUTO)\n"
+        entity_code += f"    private {t} {n};\n"
+    
+    entity_code += "\n"
+    
+    # getters and setters
+    for t, n in fields:
+        cap_n = n[0].upper() + n[1:]
+        entity_code += f"    public {t} get{cap_n}() {{\n        return {n};\n    }}\n"
+        entity_code += f"    public void set{cap_n}({t} {n}) {{\n        this.{n} = {n};\n    }}\n"
+    
+    entity_code += "}\n"
+    
+    with open(os.path.join(entity_dir, f"{class_name}.java"), "w") as f:
+        f.write(entity_code)
+        
+    # Generate Mapper
+    mapper_code = f"""package com.starlink.campus.module.kindergarten.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.starlink.campus.module.kindergarten.entity.{class_name};
+import org.apache.ibatis.annotations.Mapper;
+
+@Mapper
+public interface {class_name}Mapper extends BaseMapper<{class_name}> {{
+}}
+"""
+    with open(os.path.join(mapper_dir, f"{class_name}Mapper.java"), "w") as f:
+        f.write(mapper_code)
+
+print("Phase C Entities and Mappers generated.")

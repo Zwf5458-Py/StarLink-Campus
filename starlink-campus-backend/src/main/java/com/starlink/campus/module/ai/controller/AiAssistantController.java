@@ -1,6 +1,7 @@
 package com.starlink.campus.module.ai.controller;
 
 import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.starlink.campus.common.R;
 import com.starlink.campus.module.ai.entity.KgAiKnowledgeBase;
@@ -27,6 +28,10 @@ public class AiAssistantController {
     @Autowired
     private HealthAiService healthAiService;
 
+    // =====================================
+    // 原有 AI 接口
+    // =====================================
+
     @Operation(summary = "AI 生成成长评语")
     @PostMapping("/growth-comment")
     public R<String> generateGrowthComment(
@@ -44,7 +49,7 @@ public class AiAssistantController {
         return R.ok(aiAssistantService.generateWeeklyPlan(theme, targetAge));
     }
 
-    @Operation(summary = "AI 评估每周食谱营养")
+    @Operation(summary = "AI 评估每周食谱营养 (深度解析)")
     @PostMapping("/menu-nutrition")
     public R<Map<String, Object>> analyzeMenuNutrition(@RequestBody List<String> dishes) {
         return R.ok(aiAssistantService.analyzeMenuNutrition(dishes));
@@ -63,6 +68,16 @@ public class AiAssistantController {
         return R.ok(aiAssistantService.chatWithKnowledgeBase(question));
     }
 
+    @Operation(summary = "晨检 AI 视觉医疗辅助分析")
+    @PostMapping("/health-analyze")
+    public R<Map<String, Object>> analyzeHealthImage(@RequestParam String imageUrl) {
+        return R.ok(healthAiService.analyzeMedicalImage(imageUrl));
+    }
+
+    // =====================================
+    // 知识库管理
+    // =====================================
+
     @Operation(summary = "获取 AI 知识库列表")
     @GetMapping("/knowledge/list")
     public R<Page<KgAiKnowledgeBase>> listKnowledge(
@@ -70,12 +85,6 @@ public class AiAssistantController {
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "20") Integer pageSize) {
         return R.ok(aiAssistantService.listKnowledge(category, pageNum, pageSize));
-    }
-
-    @Operation(summary = "晨检 AI 视觉医疗辅助分析")
-    @PostMapping("/health-analyze")
-    public R<Map<String, Object>> analyzeHealthImage(@RequestParam String imageUrl) {
-        return R.ok(healthAiService.analyzeMedicalImage(imageUrl));
     }
 
     @Operation(summary = "新增 AI 知识库条目")
@@ -88,5 +97,34 @@ public class AiAssistantController {
     @DeleteMapping("/knowledge/delete/{id}")
     public R<Boolean> deleteKnowledge(@PathVariable Long id) {
         return R.ok(aiAssistantService.deleteKnowledge(id));
+    }
+
+    // =====================================
+    // 第一批增强新增接口
+    // =====================================
+
+    @Operation(summary = "每日评语批量生成")
+    @SaCheckRole(value = {"TEACHER", "ADMIN"}, mode = cn.dev33.satoken.annotation.SaMode.OR)
+    @PostMapping("/batch-daily-comments")
+    public R<List<Map<String, Object>>> generateBatchDailyComments(@RequestBody List<Map<String, Object>> studentDataList) {
+        return R.ok(aiAssistantService.generateBatchDailyComments(studentDataList));
+    }
+
+    @Operation(summary = "家长消息智能回复草稿")
+    @SaCheckRole(value = {"TEACHER", "ADMIN"}, mode = cn.dev33.satoken.annotation.SaMode.OR)
+    @PostMapping("/parent-reply-draft")
+    public R<String> generateParentMessageReplyDraft(
+            @RequestParam String parentQuestion,
+            @RequestParam String category) {
+        return R.ok(aiAssistantService.generateParentMessageReplyDraft(parentQuestion, category));
+    }
+
+    @Operation(summary = "通知智能撰写")
+    @SaCheckRole("ADMIN")
+    @PostMapping("/notice-draft")
+    public R<Map<String, String>> generateNoticeDraft(
+            @RequestParam String keyPoints,
+            @RequestParam String targetAudience) {
+        return R.ok(aiAssistantService.generateNoticeDraft(keyPoints, targetAudience));
     }
 }
