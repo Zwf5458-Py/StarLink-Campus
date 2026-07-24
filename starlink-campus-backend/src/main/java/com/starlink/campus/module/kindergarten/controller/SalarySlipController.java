@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -44,7 +45,7 @@ public class SalarySlipController {
 
     @PostMapping("/add")
     @Operation(summary = "新增薪酬条")
-    public R<Boolean> addSlip(@RequestBody KgSalarySlip slip) {
+    public R<Boolean> addSlip(@Valid @RequestBody KgSalarySlip slip) {
         return R.ok(salarySlipService.addSlip(slip));
     }
 
@@ -56,7 +57,7 @@ public class SalarySlipController {
 
     @PutMapping("/batch-publish")
     @Operation(summary = "批量发布薪酬条")
-    public R<Boolean> batchPublish(@RequestBody List<Long> ids) {
+    public R<Boolean> batchPublish(@Valid @RequestBody List<Long> ids) {
         return R.ok(salarySlipService.batchPublish(ids));
     }
 }

@@ -15,7 +15,7 @@ import java.util.List;
 @Service
 public class KgNoticeServiceImpl extends ServiceImpl<KgNoticeMapper, KgNotice> implements KgNoticeService {
 
-    @Autowired(required = false)
+    @Autowired
     private JdbcTemplate jdbcTemplate;
 
     @Override

@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.starlink.campus.common.R;
@@ -38,13 +39,13 @@ public class WeeklyMenuController {
 
     @PostMapping("/add")
     @Operation(summary = "新增食谱")
-    public R<Boolean> addMenu(@RequestBody KgWeeklyMenu menu) {
+    public R<Boolean> addMenu(@Valid @RequestBody KgWeeklyMenu menu) {
         return R.ok(weeklyMenuService.addMenu(menu));
     }
 
     @PutMapping("/update")
     @Operation(summary = "更新食谱")
-    public R<Boolean> updateMenu(@RequestBody KgWeeklyMenu menu) {
+    public R<Boolean> updateMenu(@Valid @RequestBody KgWeeklyMenu menu) {
         return R.ok(weeklyMenuService.updateMenu(menu));
     }
 

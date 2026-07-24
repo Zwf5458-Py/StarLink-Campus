@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.starlink.campus.common.R;
@@ -24,7 +25,7 @@ public class HealthArchiveController {
     @Operation(summary = "录入体检记录")
     @SaCheckRole(value = {"DOCTOR", "ADMIN"}, mode = cn.dev33.satoken.annotation.SaMode.OR)
     @PostMapping("/save")
-    public R<Boolean> saveExam(@RequestBody KgPhysicalExam exam) {
+    public R<Boolean> saveExam(@Valid @RequestBody KgPhysicalExam exam) {
         return R.ok(archiveService.savePhysicalExam(exam));
     }
 

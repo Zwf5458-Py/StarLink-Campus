@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.starlink.campus.common.R;
@@ -25,7 +26,7 @@ public class NapRecordController {
     @Operation(summary = "录入午睡记录")
     @SaCheckRole(value = {"TEACHER", "ADMIN"}, mode = cn.dev33.satoken.annotation.SaMode.OR)
     @PostMapping("/save")
-    public R<Boolean> saveRecord(@RequestBody KgNapRecord record) {
+    public R<Boolean> saveRecord(@Valid @RequestBody KgNapRecord record) {
         return R.ok(napService.saveNapRecord(record));
     }
 

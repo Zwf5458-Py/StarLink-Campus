@@ -23,7 +23,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 @Service
 public class StudentAttendanceServiceImpl extends ServiceImpl<KgStudentAttendanceMapper, KgStudentAttendance> implements StudentAttendanceService {
 
-    @Autowired(required = false)
+    @Autowired
     private KgStudentAttendanceMapper attendanceMapper;
 
     @Value("${starlink.refund.absent-threshold:5}")

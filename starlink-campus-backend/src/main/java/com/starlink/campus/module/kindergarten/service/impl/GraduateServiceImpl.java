@@ -12,7 +12,7 @@ import java.util.List;
 @Service
 public class GraduateServiceImpl implements GraduateService {
 
-    @Autowired(required = false)
+    @Autowired
     private KgGraduateRecordMapper graduateMapper;
 
     @Override

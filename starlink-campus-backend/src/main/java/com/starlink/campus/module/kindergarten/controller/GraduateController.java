@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.starlink.campus.common.R;
@@ -24,7 +25,7 @@ public class GraduateController {
     @Operation(summary = "录入毕业生去向追踪档案")
     @SaCheckRole(value = {"TEACHER", "ADMIN"}, mode = cn.dev33.satoken.annotation.SaMode.OR)
     @PostMapping("/record")
-    public R<KgGraduateRecord> saveRecord(@RequestBody KgGraduateRecord record) {
+    public R<KgGraduateRecord> saveRecord(@Valid @RequestBody KgGraduateRecord record) {
         return R.ok(graduateService.saveGraduateRecord(record));
     }
 

@@ -11,7 +11,7 @@ import java.util.List;
 @Service
 public class DevelopmentAssessmentServiceImpl implements DevelopmentAssessmentService {
 
-    @Autowired(required = false)
+    @Autowired
     private KgDevelopmentAssessmentMapper mapper;
 
     @Override

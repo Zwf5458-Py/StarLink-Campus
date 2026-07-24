@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.starlink.campus.common.R;
@@ -25,14 +26,14 @@ public class SchoolBusController {
     @Operation(summary = "新增/更新校车档案")
     @SaCheckRole("ADMIN")
     @PostMapping("/info")
-    public R<KgSchoolBus> saveBus(@RequestBody KgSchoolBus bus) {
+    public R<KgSchoolBus> saveBus(@Valid @RequestBody KgSchoolBus bus) {
         return R.ok(busService.saveSchoolBus(bus));
     }
 
     @Operation(summary = "幼儿上下车刷卡记录")
     @SaCheckRole(value = {"DRIVER", "TEACHER", "ADMIN"}, mode = cn.dev33.satoken.annotation.SaMode.OR)
     @PostMapping("/record")
-    public R<KgBusRecord> logRecord(@RequestBody KgBusRecord record) {
+    public R<KgBusRecord> logRecord(@Valid @RequestBody KgBusRecord record) {
         return R.ok(busService.logBusRecord(record));
     }
 

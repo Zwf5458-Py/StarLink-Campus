@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.starlink.campus.common.R;
@@ -33,13 +34,13 @@ public class FeeController {
 
     @Operation(summary = "新增费用项")
     @PostMapping("/item/add")
-    public R<Boolean> addFeeItem(@RequestBody KgFeeItem feeItem) {
+    public R<Boolean> addFeeItem(@Valid @RequestBody KgFeeItem feeItem) {
         return R.ok(feeService.addFeeItem(feeItem));
     }
 
     @Operation(summary = "更新费用项")
     @PostMapping("/item/update")
-    public R<Boolean> updateFeeItem(@RequestBody KgFeeItem feeItem) {
+    public R<Boolean> updateFeeItem(@Valid @RequestBody KgFeeItem feeItem) {
         return R.ok(feeService.updateFeeItem(feeItem));
     }
 
@@ -59,7 +60,7 @@ public class FeeController {
 
     @Operation(summary = "创建缴费记录")
     @PostMapping("/payment/create")
-    public R<Boolean> createPayment(@RequestBody KgPayment payment) {
+    public R<Boolean> createPayment(@Valid @RequestBody KgPayment payment) {
         return R.ok(feeService.createPayment(payment));
     }
 

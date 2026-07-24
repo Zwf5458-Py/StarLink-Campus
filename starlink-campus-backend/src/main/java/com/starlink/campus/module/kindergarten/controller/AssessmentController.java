@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.starlink.campus.common.R;
@@ -24,7 +25,7 @@ public class AssessmentController {
     @Operation(summary = "提交幼儿学期评估")
     @SaCheckRole(value = {"TEACHER", "ADMIN"}, mode = cn.dev33.satoken.annotation.SaMode.OR)
     @PostMapping("/save")
-    public R<KgDevelopmentAssessment> saveAssessment(@RequestBody KgDevelopmentAssessment assessment) {
+    public R<KgDevelopmentAssessment> saveAssessment(@Valid @RequestBody KgDevelopmentAssessment assessment) {
         return R.ok(assessmentService.saveAssessment(assessment));
     }
 

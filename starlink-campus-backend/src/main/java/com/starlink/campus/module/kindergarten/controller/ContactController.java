@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.starlink.campus.common.R;
 import com.starlink.campus.module.kindergarten.dto.ContactDTO;
@@ -40,7 +41,7 @@ public class ContactController {
 
     @Operation(summary = "安全虚拟呼叫")
     @PostMapping("/virtual-call")
-    public R<String> virtualCall(@RequestBody ContactDTO contactDTO) {
+    public R<String> virtualCall(@Valid @RequestBody ContactDTO contactDTO) {
         log.info("Initiating virtual call to {}, masked phone: {}", contactDTO.getName(), contactDTO.getMaskedPhone());
         return R.ok("呼叫已记录");
     }

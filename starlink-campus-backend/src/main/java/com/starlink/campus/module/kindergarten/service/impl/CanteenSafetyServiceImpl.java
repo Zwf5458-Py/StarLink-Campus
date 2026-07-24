@@ -14,10 +14,10 @@ import java.util.List;
 @Service
 public class CanteenSafetyServiceImpl implements CanteenSafetyService {
 
-    @Autowired(required = false)
+    @Autowired
     private KgFoodSupplierMapper supplierMapper;
 
-    @Autowired(required = false)
+    @Autowired
     private KgFoodSampleMapper sampleMapper;
 
     @Override

@@ -181,7 +181,11 @@ onMounted(async () => {
   }
 
   try {
-    const wsUrl = `ws://${window.location.hostname}:8080/api/ws/board/${classInfo.value.roomNumber}`;
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    // When served from Spring Boot, we should use the same host and port
+    const host = import.meta.env.DEV ? `${window.location.hostname}:8080` : window.location.host;
+    const wsUrl = `${protocol}//${host}/api/ws/board/${classInfo.value.roomNumber}`;
+    
     const client = new BoardWebSocketClient(wsUrl, (msg) => {
       wsConnected.value = true;
       if (msg.type === 'MODE_SWITCH') {
@@ -195,52 +199,209 @@ onMounted(async () => {
     wsConnected.value = false;
   }
 });
+
 </script>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap');
+
 body {
   margin: 0;
   padding: 0;
+  background-color: #050b14;
 }
+
+:root {
+  --primary-glow: #38bdf8;
+  --success-glow: #4ade80;
+  --warning-glow: #fde047;
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
 .board-container {
   width: 100vw;
   height: 100vh;
-  background: radial-gradient(circle at top left, #0f172a 0%, #1e1b4b 100%);
+  /* Dynamic gradient background */
+  background: 
+    radial-gradient(circle at 15% 50%, rgba(15, 23, 42, 0.9), transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(30, 27, 75, 0.9), transparent 50%),
+    #0a0f1c;
   color: #fff;
-  padding: 16px;
+  padding: 24px 32px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  font-family: 'Outfit', 'Noto Sans SC', -apple-system, sans-serif;
+  position: relative;
 }
-.board-main-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; overflow: hidden; }
-.grid-column { display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
 
-.glass-card { background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+/* Add a subtle moving light orb in the background */
+.board-container::before {
+  content: '';
+  position: absolute;
+  top: -20%; left: -10%;
+  width: 50vw; height: 50vw;
+  background: radial-gradient(circle, rgba(56,189,248,0.05) 0%, transparent 60%);
+  border-radius: 50%;
+  animation: float 20s infinite alternate ease-in-out;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes float {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(20%, 10%) scale(1.1); }
+}
+
+.board-container > * {
+  position: relative;
+  z-index: 1;
+}
+
+.board-main-grid { 
+  flex: 1; 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 20px; 
+  overflow: hidden; 
+  margin-top: 12px;
+}
+
+.grid-column { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 20px; 
+  overflow: hidden; 
+}
+
+/* Glass Card with enhanced blur and hover effects */
+.glass-card { 
+  background: var(--glass-bg); 
+  backdrop-filter: blur(24px); 
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border); 
+  border-radius: 20px; 
+  padding: 24px; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 16px; 
+  box-shadow: var(--glass-shadow);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+  animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255,255,255,0.15);
+}
+
+/* Staggered entry animation */
+.grid-column:nth-child(1) .glass-card:nth-child(1) { animation-delay: 0.1s; }
+.grid-column:nth-child(1) .glass-card:nth-child(2) { animation-delay: 0.2s; }
+.grid-column:nth-child(2) .glass-card:nth-child(1) { animation-delay: 0.15s; }
+.grid-column:nth-child(2) .glass-card:nth-child(2) { animation-delay: 0.25s; }
+.grid-column:nth-child(2) .glass-card:nth-child(3) { animation-delay: 0.35s; }
+
+@keyframes slideUpFade {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
 .flex-1 { flex: 1; overflow: hidden; }
 
-.card-title { display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: bold; color: #e2e8f0; }
-.badge { font-size: 10px; padding: 2px 6px; border-radius: 6px; }
-.badge.blue { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
-.badge.green { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
-.badge.yellow { background: rgba(253, 224, 71, 0.2); color: #fde047; }
+.card-title { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  font-size: 18px; 
+  font-weight: 700; 
+  color: #f8fafc; 
+  letter-spacing: 0.5px;
+}
 
-.recipe-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.recipe-box { background: rgba(255, 255, 255, 0.04); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 4px; }
-.recipe-box.highlight { background: rgba(74, 222, 128, 0.15); border: 1px solid rgba(74, 222, 128, 0.3); }
-.meal-name { font-size: 12px; color: #4ade80; font-weight: bold; }
-.meal-food { font-size: 11px; color: #cbd5e1; }
+.badge { 
+  font-size: 12px; 
+  padding: 4px 10px; 
+  border-radius: 8px; 
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.badge.blue { background: rgba(56, 189, 248, 0.15); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.3); }
+.badge.green { background: rgba(74, 222, 128, 0.15); color: #86efac; border: 1px solid rgba(74, 222, 128, 0.3); }
+.badge.yellow { background: rgba(253, 224, 71, 0.15); color: #fef08a; border: 1px solid rgba(253, 224, 71, 0.3); }
 
-.teachers-row { display: flex; justify-content: space-around; }
-.teacher-card { display: flex; align-items: center; gap: 8px; }
-.avatar-circle { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 18px; }
-.teacher-info { display: flex; flex-direction: column; }
-.t-name { font-size: 12px; font-weight: bold; }
-.t-role { font-size: 10px; color: #94a3b8; }
+/* Enhanced Recipe Grid */
+.recipe-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; height: 100%;}
+.recipe-box { 
+  background: rgba(255, 255, 255, 0.03); 
+  border-radius: 12px; 
+  padding: 16px 12px; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 8px; 
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+  justify-content: center;
+}
+.recipe-box:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.recipe-box.highlight { 
+  background: linear-gradient(145deg, rgba(74, 222, 128, 0.1), rgba(74, 222, 128, 0.02)); 
+  border: 1px solid rgba(74, 222, 128, 0.3); 
+  box-shadow: 0 4px 20px rgba(74, 222, 128, 0.1);
+}
+.meal-name { font-size: 14px; color: #86efac; font-weight: 700; }
+.meal-food { font-size: 13px; color: #cbd5e1; line-height: 1.4; }
 
-.stars-gallery { display: flex; gap: 10px; }
-.star-student-card { flex: 1; background: rgba(253, 224, 71, 0.1); border: 1px solid rgba(253, 224, 71, 0.3); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 4px; }
-.star-badge { font-size: 11px; color: #fde047; font-weight: bold; }
-.student-name { font-size: 12px; color: #fff; }
+/* Enhanced Teachers Row */
+.teachers-row { display: flex; justify-content: space-around; align-items: center; height: 100%;}
+.teacher-card { display: flex; align-items: center; gap: 12px; transition: transform 0.3s ease; }
+.teacher-card:hover { transform: scale(1.05); }
+.avatar-circle { 
+  width: 48px; 
+  height: 48px; 
+  border-radius: 50%; 
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02)); 
+  border: 1px solid rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center; font-size: 24px; 
+  box-shadow: inset 0 2px 10px rgba(255,255,255,0.1);
+}
+.teacher-info { display: flex; flex-direction: column; gap: 2px;}
+.t-name { font-size: 15px; font-weight: 700; letter-spacing: 0.5px;}
+.t-role { font-size: 12px; color: #94a3b8; }
+
+/* Enhanced Stars Gallery */
+.stars-gallery { display: flex; gap: 16px; height: 100%;}
+.star-student-card { 
+  flex: 1; 
+  background: linear-gradient(145deg, rgba(253, 224, 71, 0.08), rgba(253, 224, 71, 0.02)); 
+  border: 1px solid rgba(253, 224, 71, 0.2); 
+  border-radius: 12px; 
+  padding: 16px; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 8px; 
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.star-student-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 50%; height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
+  transform: skewX(-20deg);
+  animation: shine 6s infinite;
+}
+@keyframes shine {
+  0%, 80% { left: -100%; }
+  100% { left: 200%; }
+}
+.star-badge { font-size: 13px; color: #fef08a; font-weight: 700; }
+.student-name { font-size: 14px; color: #f8fafc; }
 </style>

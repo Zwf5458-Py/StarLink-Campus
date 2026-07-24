@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.starlink.campus.common.R;
@@ -18,7 +19,7 @@ public class AuthController {
     private KgStaffMapper staffMapper;
 
     @PostMapping("/login")
-    public R<String> login(@RequestBody LoginDTO loginDTO) {
+    public R<String> login(@Valid @RequestBody LoginDTO loginDTO) {
         if (loginDTO.getUsername() == null || loginDTO.getPassword() == null) {
             return R.fail("用户名或密码不能为空");
         }

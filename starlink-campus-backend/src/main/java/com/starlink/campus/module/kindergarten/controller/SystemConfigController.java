@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.annotation.SaMode;
@@ -64,7 +65,7 @@ public class SystemConfigController {
 
     @PutMapping
     @SaCheckRole(value = {"system_admin", "kg_principal"}, mode = SaMode.OR)
-    public Map<String, Object> updateConfig(@RequestBody Map<String, Object> config) {
+    public Map<String, Object> updateConfig(@Valid @RequestBody Map<String, Object> config) {
         Map<String, Object> configStore = getDefaultConfig();
         try {
             String cached = stringRedisTemplate.opsForValue().get(CONFIG_KEY);

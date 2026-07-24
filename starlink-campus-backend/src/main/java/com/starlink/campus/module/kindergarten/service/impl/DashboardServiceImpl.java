@@ -34,22 +34,22 @@ public class DashboardServiceImpl implements DashboardService {
 
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DashboardServiceImpl.class);
 
-    @Autowired(required = false)
+    @Autowired
     private KgStudentMapper studentMapper;
 
-    @Autowired(required = false)
+    @Autowired
     private KgStudentAttendanceMapper attendanceMapper;
 
-    @Autowired(required = false)
+    @Autowired
     private KgMorningCheckMapper morningCheckMapper;
 
-    @Autowired(required = false)
+    @Autowired
     private KgClassMapper classMapper;
 
-    @Autowired(required = false)
+    @Autowired
     private KgClassBoardConfigMapper boardConfigMapper;
 
-    @Autowired(required = false)
+    @Autowired
     private KgPatrolRecordMapper patrolRecordMapper;
 
     @Autowired

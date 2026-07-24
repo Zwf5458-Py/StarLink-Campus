@@ -11,7 +11,7 @@ import java.util.List;
 @Service
 public class HealthArchiveServiceImpl implements HealthArchiveService {
 
-    @Autowired(required = false)
+    @Autowired
     private KgPhysicalExamMapper examMapper;
 
     @Override

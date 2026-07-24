@@ -1,5 +1,6 @@
 package com.starlink.campus.module.ai.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -51,7 +52,7 @@ public class AiAssistantController {
 
     @Operation(summary = "AI 评估每周食谱营养 (深度解析)")
     @PostMapping("/menu-nutrition")
-    public R<Map<String, Object>> analyzeMenuNutrition(@RequestBody List<String> dishes) {
+    public R<Map<String, Object>> analyzeMenuNutrition(@Valid @RequestBody List<String> dishes) {
         return R.ok(aiAssistantService.analyzeMenuNutrition(dishes));
     }
 
@@ -63,7 +64,7 @@ public class AiAssistantController {
 
     @Operation(summary = "AI 园秘 RAG 智能对话")
     @PostMapping("/chat")
-    public R<String> chatWithKnowledgeBase(@RequestBody Map<String, String> payload) {
+    public R<String> chatWithKnowledgeBase(@Valid @RequestBody Map<String, String> payload) {
         String question = payload.get("question");
         return R.ok(aiAssistantService.chatWithKnowledgeBase(question));
     }
@@ -89,7 +90,7 @@ public class AiAssistantController {
 
     @Operation(summary = "新增 AI 知识库条目")
     @PostMapping("/knowledge/add")
-    public R<Boolean> addKnowledge(@RequestBody KgAiKnowledgeBase kb) {
+    public R<Boolean> addKnowledge(@Valid @RequestBody KgAiKnowledgeBase kb) {
         return R.ok(aiAssistantService.addKnowledge(kb));
     }
 
@@ -106,7 +107,7 @@ public class AiAssistantController {
     @Operation(summary = "每日评语批量生成")
     @SaCheckRole(value = {"TEACHER", "ADMIN"}, mode = cn.dev33.satoken.annotation.SaMode.OR)
     @PostMapping("/batch-daily-comments")
-    public R<List<Map<String, Object>>> generateBatchDailyComments(@RequestBody List<Map<String, Object>> studentDataList) {
+    public R<List<Map<String, Object>>> generateBatchDailyComments(@Valid @RequestBody List<Map<String, Object>> studentDataList) {
         return R.ok(aiAssistantService.generateBatchDailyComments(studentDataList));
     }
 

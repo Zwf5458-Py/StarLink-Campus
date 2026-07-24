@@ -14,10 +14,10 @@ import java.util.List;
 @Service
 public class SchoolBusServiceImpl implements SchoolBusService {
 
-    @Autowired(required = false)
+    @Autowired
     private KgSchoolBusMapper busMapper;
 
-    @Autowired(required = false)
+    @Autowired
     private KgBusRecordMapper recordMapper;
 
     @Override

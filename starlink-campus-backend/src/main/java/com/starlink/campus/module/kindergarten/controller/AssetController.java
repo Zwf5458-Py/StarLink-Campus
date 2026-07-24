@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.starlink.campus.common.R;
@@ -25,14 +26,14 @@ public class AssetController {
     @Operation(summary = "登记资产台账")
     @SaCheckRole("ADMIN")
     @PostMapping("/item")
-    public R<KgAssetItem> saveAsset(@RequestBody KgAssetItem item) {
+    public R<KgAssetItem> saveAsset(@Valid @RequestBody KgAssetItem item) {
         return R.ok(assetService.saveAssetItem(item));
     }
 
     @Operation(summary = "出入库/领用/报废流转登记")
     @SaCheckRole(value = {"ADMIN", "TEACHER"}, mode = cn.dev33.satoken.annotation.SaMode.OR)
     @PostMapping("/transaction")
-    public R<KgAssetRecord> logTransaction(@RequestBody KgAssetRecord record) {
+    public R<KgAssetRecord> logTransaction(@Valid @RequestBody KgAssetRecord record) {
         return R.ok(assetService.logAssetTransaction(record));
     }
 

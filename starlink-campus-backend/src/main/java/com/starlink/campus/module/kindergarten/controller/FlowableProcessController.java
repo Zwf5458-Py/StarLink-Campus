@@ -69,7 +69,7 @@ public class FlowableProcessController {
     }
 
     @PostMapping("/task/complete/{taskId}")
-    public R<Boolean> completeTask(@PathVariable String taskId, @RequestBody(required = false) Map<String, Object> params) {
+    public R<Boolean> completeTask(@PathVariable String taskId, @Valid @RequestBody(required = false) Map<String, Object> params) {
         if (params == null) {
             params = new HashMap<>();
         }

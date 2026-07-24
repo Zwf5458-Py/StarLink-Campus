@@ -26,13 +26,13 @@ public class AiAssistantServiceImpl implements AiAssistantService {
 
     private static final Logger log = LoggerFactory.getLogger(AiAssistantServiceImpl.class);
 
-    @Autowired(required = false)
+    @Autowired
     private KgAiPromptTemplateMapper promptTemplateMapper;
 
-    @Autowired(required = false)
+    @Autowired
     private KgAiKnowledgeBaseMapper knowledgeBaseMapper;
 
-    @Autowired(required = false)
+    @Autowired
     private KgAiLogMapper aiLogMapper;
 
     @Autowired
@@ -251,6 +251,9 @@ public class AiAssistantServiceImpl implements AiAssistantService {
         return result;
     }
 
+    @org.springframework.beans.factory.annotation.Value("${ai.model:qwen-turbo}")
+    private String defaultModelName;
+
     private void saveLog(String sceneType, String prompt, String result, Integer tokens) {
         try {
             KgAiLog logEntity = new KgAiLog();
@@ -258,7 +261,7 @@ public class AiAssistantServiceImpl implements AiAssistantService {
             logEntity.setPrompt(prompt);
             logEntity.setResult(result);
             logEntity.setTokensUsed(tokens);
-            logEntity.setModelName("qwen-turbo");
+            logEntity.setModelName(defaultModelName);
             try {
                 if (cn.dev33.satoken.stp.StpUtil.isLogin()) {
                     logEntity.setUserId(cn.dev33.satoken.stp.StpUtil.getLoginIdAsLong());

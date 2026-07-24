@@ -21,16 +21,16 @@ import java.util.Map;
 @Service
 public class SearchServiceImpl implements SearchService {
 
-    @Autowired(required = false)
+    @Autowired
     private KgStudentMapper studentMapper;
 
-    @Autowired(required = false)
+    @Autowired
     private KgStaffMapper staffMapper;
 
-    @Autowired(required = false)
+    @Autowired
     private KgOaApprovalMapper oaApprovalMapper;
 
-    @Autowired(required = false)
+    @Autowired
     private KgPatrolRecordMapper patrolRecordMapper;
 
     @Override

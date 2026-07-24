@@ -23,13 +23,13 @@ import java.util.stream.Collectors;
 @Service
 public class ContactServiceImpl implements ContactService {
 
-    @Autowired(required = false)
+    @Autowired
     private KgStaffMapper staffMapper;
 
-    @Autowired(required = false)
+    @Autowired
     private KgStudentMapper studentMapper;
 
-    @Autowired(required = false)
+    @Autowired
     private KgClassMapper classMapper;
 
     @Override

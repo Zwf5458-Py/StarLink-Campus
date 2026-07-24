@@ -11,7 +11,7 @@ import java.util.List;
 @Service
 public class FeedbackServiceImpl implements FeedbackService {
 
-    @Autowired(required = false)
+    @Autowired
     private KgFeedbackTicketMapper feedbackMapper;
 
     @Override

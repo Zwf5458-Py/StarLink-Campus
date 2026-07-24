@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.starlink.campus.common.R;
@@ -36,13 +37,13 @@ public class EnrollmentController {
 
     @PostMapping("/add")
     @Operation(summary = "新增招生记录")
-    public R<Boolean> add(@RequestBody KgEnrollment enrollment) {
+    public R<Boolean> add(@Valid @RequestBody KgEnrollment enrollment) {
         return R.ok(enrollmentService.add(enrollment));
     }
 
     @PutMapping("/update")
     @Operation(summary = "更新招生记录")
-    public R<Boolean> update(@RequestBody KgEnrollment enrollment) {
+    public R<Boolean> update(@Valid @RequestBody KgEnrollment enrollment) {
         return R.ok(enrollmentService.update(enrollment));
     }
 

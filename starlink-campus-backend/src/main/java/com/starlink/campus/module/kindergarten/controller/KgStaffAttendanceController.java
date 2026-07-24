@@ -25,10 +25,10 @@ import java.time.ZoneId;
 @CrossOrigin
 public class KgStaffAttendanceController {
 
-    @Autowired(required = false)
+    @Autowired
     private KgStaffAttendanceService staffAttendanceService;
 
-    @Autowired(required = false)
+    @Autowired
     private com.starlink.campus.module.kindergarten.mapper.KgStaffMapper kgStaffMapper;
 
     @GetMapping("/list")

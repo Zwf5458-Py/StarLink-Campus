@@ -9,14 +9,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 
+@SaCheckLogin
 @RestController
 @RequestMapping("/kindergarten/board/config")
 @CrossOrigin
 public class KgClassBoardConfigController {
 
-    @Autowired(required = false)
+    @Autowired
     private KgClassBoardConfigMapper boardConfigMapper;
 
     @GetMapping("/{roomNumber}")

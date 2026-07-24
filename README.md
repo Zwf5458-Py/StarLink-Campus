@@ -283,37 +283,34 @@ CREATE DATABASE IF NOT EXISTS `starlink_campus` DEFAULT CHARACTER SET utf8mb4 CO
 - `V22__schema_phase_b.sql` (留样、供应商、校车、资产台账、发展评估表)
 - `V23__schema_phase_c.sql` (开放日、转介绍、毕业生、IoT环境、智能闸机表)
 
-### 3. 项目运行步骤
+### 3. 项目运行与终极部署步骤
 
-#### ① 启动后端服务 (`starlink-campus-backend`)
-```bash
-cd starlink-campus-backend
-# 编译并运行单元测试
-mvn clean test
-# 启动 Spring Boot 应用
-mvn spring-boot:run
-```
-- 后端 API 端口：`http://localhost:8080/api`
-- Swagger 文档：`http://localhost:8080/api/doc.html`
+在最新架构中，为了简化实际园所的弱网/离线落地部署成本，我们实现了**前后端同源 Fat-Jar 部署架构**。您无需单独配置 Nginx，只需运行一个 Jar 包即可同时提供 API、WebSocket 和高清 UI 界面。
 
-#### ② 启动 PC 管理后台 (`starlink-campus-admin-ui`)
+#### ① 一键打包全息智联环境
 ```bash
-cd starlink-campus-admin-ui
-npm install
-npm run dev
-```
-- 后台访问地址：`http://localhost`
-
-#### ③ 启动智慧班牌终端 UI (`starlink-campus-board-ui`)
-```bash
+# 1. 编译班牌终端 UI，并将静态资源内聚至 SpringBoot 后端
 cd starlink-campus-board-ui
-npm install
-npm run dev
-```
-- 班牌 UI 访问地址：`http://localhost:3000`
+npm install && npm run build
+cp -r dist/* ../starlink-campus-backend/src/main/resources/static/
 
-#### ④ 启动微信小程序 (`starlink-campus-app`)
-使用 **微信开发者工具** 打开目录：`/Users/oraclez/Desktop/zwf/StarLink Campus/starlink-campus-app`
+# 2. 编译并打包 SpringBoot 后端 (含 12 个高优业务自动化测试用例)
+cd ../starlink-campus-backend
+mvn clean package
+```
+
+#### ② 生产级启动
+打包完成后，系统会生成 `target/starlink-campus-backend-1.0.0-SNAPSHOT.jar`。
+```bash
+java -jar target/starlink-campus-backend-1.0.0-SNAPSHOT.jar
+```
+- 🖥️ **全息智慧班牌终端 UI (浏览器直接访问)**：`http://localhost:8080/`
+- 🔌 **后端 API 网关地址**：`http://localhost:8080/api`
+- 📚 **Swagger 接口文档**：`http://localhost:8080/api/doc.html`
+
+#### ③ 启动移动端矩阵 (可选)
+- **家长/教师微信小程序 (`starlink-campus-app`)**：使用 **微信开发者工具** 打开该目录即可预览真机效果。
+- **PC 管理后台 (`starlink-campus-admin-ui`)**：使用 `npm run dev` 启动管理面板。
 
 ---
 

@@ -29,7 +29,7 @@ public class KgOaController {
     }
 
     @PostMapping("/submit")
-    public R<Boolean> submit(@RequestBody KgOaApproval approval) {
+    public R<Boolean> submit(@Valid @RequestBody KgOaApproval approval) {
         return R.ok(oaService.submit(approval));
     }
 

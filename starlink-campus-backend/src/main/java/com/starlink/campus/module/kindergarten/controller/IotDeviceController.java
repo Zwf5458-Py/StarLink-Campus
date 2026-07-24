@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.starlink.campus.common.R;
@@ -23,7 +24,10 @@ public class IotDeviceController {
 
     @Operation(summary = "硬件上报教室环境数据 (可由班牌直接POST)")
     @PostMapping("/env/report")
-    public R<KgEnvironmentMonitor> reportEnv(@RequestBody KgEnvironmentMonitor data) {
+    public R<KgEnvironmentMonitor> reportEnv(@RequestHeader(value = "X-Device-Token", required = false) String deviceToken, @Valid @RequestBody KgEnvironmentMonitor data) {
+        if (!"starlink-iot-secret-2026".equals(deviceToken)) {
+            return R.fail(401, "Invalid Device Token");
+        }
         return R.ok(iotService.recordEnvironmentData(data));
     }
 
@@ -36,7 +40,10 @@ public class IotDeviceController {
 
     @Operation(summary = "门禁闸机触发人脸或IC卡通行回传记录")
     @PostMapping("/gate/pass")
-    public R<KgSmartGateRecord> reportGatePass(@RequestBody KgSmartGateRecord record) {
+    public R<KgSmartGateRecord> reportGatePass(@RequestHeader(value = "X-Device-Token", required = false) String deviceToken, @Valid @RequestBody KgSmartGateRecord record) {
+        if (!"starlink-iot-secret-2026".equals(deviceToken)) {
+            return R.fail(401, "Invalid Device Token");
+        }
         return R.ok(iotService.logGatePass(record));
     }
 

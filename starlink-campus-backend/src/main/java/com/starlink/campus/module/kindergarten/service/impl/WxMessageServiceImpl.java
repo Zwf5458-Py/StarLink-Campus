@@ -15,7 +15,7 @@ public class WxMessageServiceImpl implements WxMessageService {
 
     private static final Logger log = LoggerFactory.getLogger(WxMessageServiceImpl.class);
 
-    @Autowired(required = false)
+    @Autowired
     private WxMpService wxMpService;
 
     @Value("${wx.mp.template-id.health-alert:HEALTH_ALERT_TEMP_ID}")

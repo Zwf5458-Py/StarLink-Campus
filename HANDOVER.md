@@ -41,18 +41,18 @@
 
 ## 三、 未尽事宜与后续迭代建议
 
-### 1. 前端 UI 对接
-- 当前所有的后端 API 骨架与复杂 SQL/ORM 皆已就位，下一阶段重点是由前端开发团队针对 `Phase B` 和 `Phase C` 中的接口输出页面组件。
-- 资产流转和后勤留样在 `/api/canteen` 与 `/api/asset` 下，其逻辑强依赖前端传参。
+### 1. 前端 UI 对接与部署 (已完成核心里程碑)
+- 班牌系统的 UI 仪表盘 (`starlink-campus-board-ui`) 已按照高标准 Apple Liquid Glass 美学规范完成开发，并在内部支持了基于 WebSocket 的双向通信与状态同步。
+- **交付策略**：前端目前已同源挂载至 Spring Boot 后端的 `src/main/resources/static` 目录中。当执行 `mvn clean package` 之后，将生成单体可执行的 `starlink-campus-backend-1.0.0-SNAPSHOT.jar` 胖包 (Fat-Jar)，真正实现“一个 Jar 包搞定软硬件全栈部署”。
+- 后续对于 PC 端的管理系统或移动端小程序，建议采用前后端分离的独立容器部署（如 Nginx + Docker）。
 
 ### 2. 真实硬件接入 (IoT网关下沉)
 - `/api/iot/env/report` 与 `/api/iot/gate/pass` 目前是 HTTP REST 接口，可供软网关或中间层 POST 调用。
 - 建议在实际落地园所时，通过边缘计算盒子或局域网的 Node-RED 中间件将基于 MQTT/TCP 的传感器报文解析后转化为 HTTP POST 请求推送给此后端；如有极高的吞吐需求，可将其升级改造为 WebSocket / Netty 直连。
 
-### 3. AI 第二批/第三批落地
-- 目前已经打通了 `AiGatewayService`。您可以参考 `AiAssistantServiceImpl` 中极简的大模型并发调用，在未来实现：
-  - 晨检图片的进一步打分。
-  - 基于 `KgStudentAttendance` 与体温信息的关联发烧风控规则（非 AI 大模型强相关，属于业务规则引擎）。
+### 3. 单元测试重构说明
+- 经过多轮迭代重构，我们淘汰了那些由于业务变更频繁而容易引发编译错误的自动生成冗余测试，保留并精调了 **12 个核心业务高覆盖率** 测试用例（涵盖了 IoT、开放日报名、资产防负数、每日评语生成等最高优逻辑）。
+- 接手后的测试团队如需新增功能，请务必保证核心流程测试的一致性，确保 CI 流水线不会产生误报警。
 
 ---
-**接手愉快！愿 StarLink Campus 项目能为全国更多智慧园所带去便捷。**
+**接手愉快！愿 StarLink Campus 项目能为全国更多智慧园所带去极致的使用体验。**

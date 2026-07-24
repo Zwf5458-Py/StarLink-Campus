@@ -77,7 +77,7 @@ public class KgStudentController {
 
     @Operation(summary = "批量升班")
     @PostMapping("/batch-promote")
-    public R<Integer> batchPromote(@RequestBody Map<String, Object> params) {
+    public R<Integer> batchPromote(@Valid @RequestBody Map<String, Object> params) {
         List<Integer> list = (List<Integer>) params.get("studentIds");
         List<Long> studentIds = list.stream().map(Integer::longValue).toList();
         Long targetClassId = Long.valueOf(params.get("targetClassId").toString());
@@ -86,7 +86,7 @@ public class KgStudentController {
 
     @Operation(summary = "批量毕业")
     @PostMapping("/batch-graduate")
-    public R<Integer> batchGraduate(@RequestBody List<Long> studentIds) {
+    public R<Integer> batchGraduate(@Valid @RequestBody List<Long> studentIds) {
         return R.ok(studentService.batchGraduate(studentIds));
     }
 }

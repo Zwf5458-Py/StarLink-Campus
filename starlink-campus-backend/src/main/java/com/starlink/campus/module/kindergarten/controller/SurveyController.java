@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.starlink.campus.common.R;
@@ -38,7 +39,7 @@ public class SurveyController {
 
     @PostMapping("/add")
     @Operation(summary = "新增问卷")
-    public R<String> addSurvey(@RequestBody KgSurvey survey) {
+    public R<String> addSurvey(@Valid @RequestBody KgSurvey survey) {
         if (surveyService.addSurvey(survey)) {
             return R.ok("新增问卷成功");
         }
@@ -47,7 +48,7 @@ public class SurveyController {
 
     @PostMapping("/update")
     @Operation(summary = "修改问卷")
-    public R<String> updateSurvey(@RequestBody KgSurvey survey) {
+    public R<String> updateSurvey(@Valid @RequestBody KgSurvey survey) {
         if (surveyService.updateSurvey(survey)) {
             return R.ok("修改问卷成功");
         }
@@ -89,7 +90,7 @@ public class SurveyController {
 
     @PostMapping("/question/add")
     @Operation(summary = "新增题目")
-    public R<String> addQuestion(@RequestBody KgSurveyQuestion question) {
+    public R<String> addQuestion(@Valid @RequestBody KgSurveyQuestion question) {
         if (surveyService.addQuestion(question)) {
             return R.ok("新增题目成功");
         }
@@ -98,7 +99,7 @@ public class SurveyController {
 
     @PostMapping("/question/update")
     @Operation(summary = "修改题目")
-    public R<String> updateQuestion(@RequestBody KgSurveyQuestion question) {
+    public R<String> updateQuestion(@Valid @RequestBody KgSurveyQuestion question) {
         if (surveyService.updateQuestion(question)) {
             return R.ok("修改题目成功");
         }
@@ -116,7 +117,7 @@ public class SurveyController {
 
     @PostMapping("/answer/submit")
     @Operation(summary = "提交问卷答案")
-    public R<String> submitAnswer(@RequestBody KgSurveyAnswer answer) {
+    public R<String> submitAnswer(@Valid @RequestBody KgSurveyAnswer answer) {
         if (surveyService.submitAnswer(answer)) {
             return R.ok("提交答案成功");
         }

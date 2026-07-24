@@ -14,10 +14,10 @@ import java.util.List;
 @Service
 public class AssetManagementServiceImpl implements AssetManagementService {
 
-    @Autowired(required = false)
+    @Autowired
     private KgAssetItemMapper itemMapper;
 
-    @Autowired(required = false)
+    @Autowired
     private KgAssetRecordMapper recordMapper;
 
     @Override
@@ -43,6 +43,9 @@ public class AssetManagementServiceImpl implements AssetManagementService {
                     item.setTotalQuantity(item.getTotalQuantity() + qty);
                 }
             } else if ("OUTBOUND".equals(record.getRecordType()) || "SCRAP".equals(record.getRecordType())) {
+                if (item.getAvailableQuantity() - qty < 0) {
+                    throw new IllegalArgumentException("库存不足，无法出库/报废");
+                }
                 item.setAvailableQuantity(item.getAvailableQuantity() - qty);
                 if ("SCRAP".equals(record.getRecordType())) {
                     item.setTotalQuantity(item.getTotalQuantity() - qty);

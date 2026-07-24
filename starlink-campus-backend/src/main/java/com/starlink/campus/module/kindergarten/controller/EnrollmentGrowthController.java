@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.starlink.campus.common.R;
@@ -25,7 +26,7 @@ public class EnrollmentGrowthController {
     @Operation(summary = "发布开放日活动")
     @SaCheckRole("ADMIN")
     @PostMapping("/event")
-    public R<KgOpenDayEvent> createEvent(@RequestBody KgOpenDayEvent event) {
+    public R<KgOpenDayEvent> createEvent(@Valid @RequestBody KgOpenDayEvent event) {
         return R.ok(growthService.createEvent(event));
     }
 
@@ -43,7 +44,7 @@ public class EnrollmentGrowthController {
 
     @Operation(summary = "家长提交老带新推荐信息")
     @PostMapping("/referral")
-    public R<KgReferralRecord> submitReferral(@RequestBody KgReferralRecord record) {
+    public R<KgReferralRecord> submitReferral(@Valid @RequestBody KgReferralRecord record) {
         return R.ok(growthService.addReferral(record));
     }
 

@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.starlink.campus.common.R;
@@ -25,14 +26,14 @@ public class CanteenSafetyController {
     @Operation(summary = "新增/更新供应商档案")
     @SaCheckRole(value = {"ADMIN", "LOGISTICS"}, mode = cn.dev33.satoken.annotation.SaMode.OR)
     @PostMapping("/supplier")
-    public R<KgFoodSupplier> saveSupplier(@RequestBody KgFoodSupplier supplier) {
+    public R<KgFoodSupplier> saveSupplier(@Valid @RequestBody KgFoodSupplier supplier) {
         return R.ok(canteenService.saveSupplier(supplier));
     }
 
     @Operation(summary = "录入食品48小时留样")
     @SaCheckRole(value = {"ADMIN", "LOGISTICS"}, mode = cn.dev33.satoken.annotation.SaMode.OR)
     @PostMapping("/sample")
-    public R<KgFoodSample> recordSample(@RequestBody KgFoodSample sample) {
+    public R<KgFoodSample> recordSample(@Valid @RequestBody KgFoodSample sample) {
         return R.ok(canteenService.recordFoodSample(sample));
     }
 

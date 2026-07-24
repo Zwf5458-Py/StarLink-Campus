@@ -28,7 +28,7 @@ public class KgOaApprovalServiceImpl extends ServiceImpl<KgOaApprovalMapper, KgO
     @Autowired
     private TaskService taskService;
 
-    @Autowired(required = false)
+    @Autowired
     private com.starlink.campus.module.kindergarten.mapper.KgStudentAttendanceMapper attendanceMapper;
 
     @Override

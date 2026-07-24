@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.starlink.campus.common.R;
 import com.starlink.campus.module.kindergarten.dto.MenuNodeVO;
@@ -62,7 +63,7 @@ public class SystemController {
     }
 
     @PostMapping("/role")
-    public R<RoleVO> addRole(@RequestBody KgRole role) {
+    public R<RoleVO> addRole(@Valid @RequestBody KgRole role) {
         Long newId = System.currentTimeMillis();
         role.setId(newId);
         try {
@@ -83,7 +84,7 @@ public class SystemController {
     }
 
     @PostMapping("/role/permission")
-    public R<String> saveRolePermission(@RequestBody RolePermissionSaveDTO dto) {
+    public R<String> saveRolePermission(@Valid @RequestBody RolePermissionSaveDTO dto) {
         if (dto.getRoleId() != null && ROLE_CACHE.containsKey(dto.getRoleId())) {
             RoleVO roleVO = ROLE_CACHE.get(dto.getRoleId());
             roleVO.setCheckedMenuIds(dto.getCheckedMenuIds() != null ? dto.getCheckedMenuIds() : Collections.emptyList());

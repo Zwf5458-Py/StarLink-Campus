@@ -14,10 +14,10 @@ import java.util.List;
 @Service
 public class EnrollmentGrowthServiceImpl implements EnrollmentGrowthService {
 
-    @Autowired(required = false)
+    @Autowired
     private KgOpenDayEventMapper eventMapper;
 
-    @Autowired(required = false)
+    @Autowired
     private KgReferralRecordMapper referralMapper;
 
     @Override
@@ -31,15 +31,18 @@ public class EnrollmentGrowthServiceImpl implements EnrollmentGrowthService {
     @Override
     public boolean enrollInEvent(Long eventId) {
         KgOpenDayEvent event = eventMapper.selectById(eventId);
-        if (event != null && !"FULL".equals(event.getStatus()) && !"COMPLETED".equals(event.getStatus())) {
-            int current = event.getEnrolledCount() == null ? 0 : event.getEnrolledCount();
-            if (current < event.getCapacity()) {
-                event.setEnrolledCount(current + 1);
-                if (current + 1 == event.getCapacity()) {
-                    event.setStatus("FULL");
-                }
-                return eventMapper.updateById(event) > 0;
+        if (event == null || "FULL".equals(event.getStatus()) || "COMPLETED".equals(event.getStatus())) {
+            return false;
+        }
+        int updated = eventMapper.updateEnrolledCount(eventId);
+        if (updated > 0) {
+            // Re-check capacity to see if we just filled it
+            event = eventMapper.selectById(eventId);
+            if (event.getEnrolledCount() != null && event.getEnrolledCount() >= event.getCapacity()) {
+                event.setStatus("FULL");
+                eventMapper.updateById(event);
             }
+            return true;
         }
         return false;
     }

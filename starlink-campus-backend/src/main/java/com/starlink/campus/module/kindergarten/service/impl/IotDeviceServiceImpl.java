@@ -15,10 +15,10 @@ import java.math.BigDecimal;
 @Service
 public class IotDeviceServiceImpl implements IotDeviceService {
 
-    @Autowired(required = false)
+    @Autowired
     private KgEnvironmentMonitorMapper envMapper;
 
-    @Autowired(required = false)
+    @Autowired
     private KgSmartGateRecordMapper gateMapper;
 
     @Override

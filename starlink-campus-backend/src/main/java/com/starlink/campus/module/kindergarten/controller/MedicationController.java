@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.starlink.campus.common.R;
@@ -24,7 +25,7 @@ public class MedicationController {
 
     @Operation(summary = "家长提交喂药申请")
     @PostMapping("/apply")
-    public R<KgMedicationApplication> submitApplication(@RequestBody KgMedicationApplication application) {
+    public R<KgMedicationApplication> submitApplication(@Valid @RequestBody KgMedicationApplication application) {
         return R.ok(medicationService.submitApplication(application));
     }
 
@@ -38,7 +39,7 @@ public class MedicationController {
     @Operation(summary = "保健医执行喂药留痕")
     @SaCheckRole(value = {"DOCTOR", "ADMIN"}, mode = cn.dev33.satoken.annotation.SaMode.OR)
     @PostMapping("/execute")
-    public R<KgMedicationExecution> executeMedication(@RequestBody KgMedicationExecution execution) {
+    public R<KgMedicationExecution> executeMedication(@Valid @RequestBody KgMedicationExecution execution) {
         return R.ok(medicationService.executeMedication(execution));
     }
 

@@ -14,10 +14,10 @@ import java.util.List;
 @Service
 public class MedicationServiceImpl implements MedicationService {
 
-    @Autowired(required = false)
+    @Autowired
     private KgMedicationApplicationMapper appMapper;
     
-    @Autowired(required = false)
+    @Autowired
     private KgMedicationExecutionMapper execMapper;
 
     @Override

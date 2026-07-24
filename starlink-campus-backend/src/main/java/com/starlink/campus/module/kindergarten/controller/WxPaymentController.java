@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.github.binarywang.wxpay.bean.notify.WxPayOrderNotifyResult;
 import com.github.binarywang.wxpay.bean.order.WxPayMpOrderResult;
@@ -25,7 +26,7 @@ public class WxPaymentController {
 
     private static final Logger log = LoggerFactory.getLogger(WxPaymentController.class);
 
-    @Autowired(required = false)
+    @Autowired
     private WxPayService wxPayService;
 
     @PostMapping("/create-order")
@@ -71,7 +72,7 @@ public class WxPaymentController {
 
     @PostMapping("/notify/wechat")
     @Operation(summary = "微信支付回调异步通知与账单核销")
-    public String notifyWechat(@RequestBody String xmlData) {
+    public String notifyWechat(@Valid @RequestBody String xmlData) {
         log.info("[微信支付回调] 收到微信服务器异步通知数据: {}", xmlData);
         if (wxPayService != null) {
             try {

@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.starlink.campus.common.R;
@@ -34,7 +35,7 @@ public class PickupPersonController {
 
     @Operation(summary = "新增接送人")
     @PostMapping("/add")
-    public R<Void> add(@RequestBody KgPickupPerson person) {
+    public R<Void> add(@Valid @RequestBody KgPickupPerson person) {
         pickupPersonService.addPickupPerson(person);
         return R.ok(null);
     }
@@ -55,7 +56,7 @@ public class PickupPersonController {
 
     @Operation(summary = "校验接送人身份")
     @PostMapping("/verify")
-    public R<Boolean> verify(@RequestBody Map<String, Object> params) {
+    public R<Boolean> verify(@Valid @RequestBody Map<String, Object> params) {
         Long studentId = Long.valueOf(params.get("studentId").toString());
         String identifier = params.get("identifier").toString();
         boolean result = pickupPersonService.verifyPickup(studentId, identifier);

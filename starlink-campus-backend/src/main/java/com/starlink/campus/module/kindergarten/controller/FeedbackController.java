@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import jakarta.validation.Valid;
 import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.starlink.campus.common.R;
@@ -23,7 +24,7 @@ public class FeedbackController {
 
     @Operation(summary = "家长提交工单")
     @PostMapping("/submit")
-    public R<KgFeedbackTicket> submitFeedback(@RequestBody KgFeedbackTicket ticket) {
+    public R<KgFeedbackTicket> submitFeedback(@Valid @RequestBody KgFeedbackTicket ticket) {
         return R.ok(feedbackService.submitFeedback(ticket));
     }
 
