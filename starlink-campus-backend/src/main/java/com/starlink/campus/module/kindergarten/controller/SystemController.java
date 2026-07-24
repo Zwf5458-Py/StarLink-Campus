@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.starlink.campus.common.R;
 import com.starlink.campus.module.kindergarten.dto.MenuNodeVO;
 import com.starlink.campus.module.kindergarten.dto.RolePermissionSaveDTO;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+@SaCheckLogin
 @RestController
 @RequestMapping("/system")
 public class SystemController {

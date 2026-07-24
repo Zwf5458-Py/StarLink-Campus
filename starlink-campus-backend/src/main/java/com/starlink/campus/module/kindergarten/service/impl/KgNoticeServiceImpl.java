@@ -20,7 +20,6 @@ public class KgNoticeServiceImpl extends ServiceImpl<KgNoticeMapper, KgNotice> i
 
     @Override
     public List<KgNotice> getUnreadNoticeList() {
-        ensureTableExists();
         try {
             if (count() == 0) {
                 initDefaultNotices();
@@ -40,32 +39,13 @@ public class KgNoticeServiceImpl extends ServiceImpl<KgNoticeMapper, KgNotice> i
 
     @Override
     public boolean markAsRead(Long id) {
-        ensureTableExists();
         KgNotice notice = new KgNotice();
         notice.setId(id);
         notice.setIsRead(1);
         return updateById(notice);
     }
 
-    private void ensureTableExists() {
-        if (jdbcTemplate != null) {
-            try {
-                jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS kg_notice (" +
-                        "id BIGINT AUTO_INCREMENT PRIMARY KEY," +
-                        "type VARCHAR(32)," +
-                        "type_text VARCHAR(128)," +
-                        "title VARCHAR(255)," +
-                        "content TEXT," +
-                        "target_role VARCHAR(64)," +
-                        "is_read INT DEFAULT 0," +
-                        "create_time DATETIME" +
-                        ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
-            } catch (Exception ignored) {}
-        }
-    }
-
     private void initDefaultNotices() {
-        ensureTableExists();
         KgNotice n1 = new KgNotice();
         n1.setType("danger");
         n1.setTypeText("🩺 晨检发热预警");

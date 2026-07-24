@@ -1,13 +1,13 @@
 import request from '@/utils/request'
 
 export function getContactList() {
-  return request.get('/kindergarten/contact/list')
+  return request.get('/api/kindergarten/contacts/list')
 }
 
 export function searchContacts(keyword: string) {
-  return request.get('/kindergarten/contact/search', { params: { keyword } })
+  return request.get('/api/kindergarten/contacts/search', { params: { keyword } })
 }
 
 export function virtualCall(contactId: number) {
-  return request.post('/kindergarten/contact/virtual-call', { contactId })
+  return request.post('/api/kindergarten/contacts/virtual-call', { contactId })
 }

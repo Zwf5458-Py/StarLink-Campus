@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.starlink.campus.common.R;
 import com.starlink.campus.module.kindergarten.entity.KgNotice;
 import com.starlink.campus.module.kindergarten.service.KgNoticeService;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
+@SaCheckLogin
 @RestController
 @RequestMapping("/notification")
 @Tag(name = "系统通知中心")

@@ -1,5 +1,6 @@
 package com.starlink.campus.module.kindergarten.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import com.starlink.campus.common.R;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -7,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
+@SaCheckLogin
 @RestController
 @RequestMapping("/live")
 @Tag(name = "校园安防监控与直播服务")

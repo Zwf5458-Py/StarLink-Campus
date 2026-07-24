@@ -13,7 +13,8 @@ services:
       - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
-      - ../sql/01_schema_kindergarten.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      # 移除错误的 schema 挂载，统一由 Spring Boot Flyway 进行初始化
+      # - ../sql/01_schema_kindergarten.sql:/docker-entrypoint-initdb.d/01_schema.sql
     networks:
       - starlink-net
 

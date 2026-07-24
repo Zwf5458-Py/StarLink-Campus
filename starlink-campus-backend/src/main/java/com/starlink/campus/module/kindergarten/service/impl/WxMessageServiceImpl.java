@@ -7,6 +7,7 @@ import me.chanjar.weixin.mp.bean.template.WxMpTemplateMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,18 +18,24 @@ public class WxMessageServiceImpl implements WxMessageService {
     @Autowired(required = false)
     private WxMpService wxMpService;
 
+    @Value("${wx.mp.template-id.health-alert:HEALTH_ALERT_TEMP_ID}")
+    private String healthAlertTempId;
+
+    @Value("${wx.mp.template-id.oa-approval:OA_APPROVAL_TEMP_ID}")
+    private String oaApprovalTempId;
+
     @Override
     public boolean sendHealthAlertNotice(String openId, String studentName, String temp, String timeStr) {
         log.info("[微信生态] 尝试向openid={} 发送晨检异常模板消息, 学生={}, 体温={}", openId, studentName, temp);
         if (wxMpService == null) {
-            log.warn("[微信生态] WxMpService 暂未配置秘钥，消息已记录到后台待发队列。");
-            return true;
+            log.warn("[微信生态] WxMpService 暂未配置，无法发送模板消息。");
+            return false;
         }
 
         try {
             WxMpTemplateMessage templateMessage = WxMpTemplateMessage.builder()
                     .toUser(openId)
-                    .templateId("HEALTH_ALERT_TEMP_ID")
+                    .templateId(healthAlertTempId)
                     .build();
 
             templateMessage.addData(new WxMpTemplateData("first", "尊敬的家长，检测到您家宝贝晨检体温异常！", "#FF0000"));
@@ -49,13 +56,14 @@ public class WxMessageServiceImpl implements WxMessageService {
     public boolean sendOaApprovalNotice(String openId, String applicantName, String leaveType, String status) {
         log.info("[微信生态] 发送 OA 审批通知, 申请人={}, 状态={}", applicantName, status);
         if (wxMpService == null) {
-            return true;
+            log.warn("[微信生态] WxMpService 暂未配置，无法发送模板消息。");
+            return false;
         }
 
         try {
             WxMpTemplateMessage templateMessage = WxMpTemplateMessage.builder()
                     .toUser(openId)
-                    .templateId("OA_APPROVAL_TEMP_ID")
+                    .templateId(oaApprovalTempId)
                     .build();
 
             templateMessage.addData(new WxMpTemplateData("first", "您好，您提交的园务 OA 申请有了最新进展。"));

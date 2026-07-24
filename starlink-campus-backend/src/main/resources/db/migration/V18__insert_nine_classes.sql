@@ -1,9 +1,9 @@
 -- 补充大中小各 3 个班级 (共 9 个班级) 初始数据
 SET FOREIGN_KEY_CHECKS = 0;
 
-DELETE FROM `kg_class`;
+-- DELETE FROM `kg_class`;
 
-INSERT INTO `kg_class` (`id`, `campus_id`, `grade_level`, `class_name`, `student_count`, `room_number`, `create_time`) VALUES
+INSERT IGNORE INTO `kg_class` (`id`, `campus_id`, `grade_level`, `class_name`, `student_count`, `room_number`, `create_time`) VALUES
 (1, 1, '小班', '小(1)班 - 雏菊班', 20, 'C101', NOW()),
 (2, 1, '小班', '小(2)班 - 苹果班', 22, 'C102', NOW()),
 (3, 1, '小班', '小(3)班 - 樱桃班', 20, 'C103', NOW()),
